@@ -2,7 +2,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.db import models
 from django.utils import timezone
 
-# TODO: Will add the manager import here
+from account.managers import CustomUserManager
 
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
@@ -48,7 +48,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(null=True, blank=True)
 
     # Set the manager
-    # TODO: Will add the manager here
+    objects = CustomUserManager()
 
     # Configuration
     USERNAME_FIELD = "email"
