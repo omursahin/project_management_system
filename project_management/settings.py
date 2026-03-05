@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "group_project",
     "report",
     "project_report",
+
 ]
 
 MIDDLEWARE = [
