@@ -1,0 +1,50 @@
+name: Django CI & Frontend Check
+
+on:
+  push:
+    branches: [ "master" ]
+
+
+jobs:
+  backend-test:
+    name: Run Pytest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu Çek (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Python Kurulumu
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Bağımlılıkları Yükle
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt 
+
+      - name: Pytest Çalıştır
+        run: |
+          pytest
+
+  frontend-check:
+    name: Run Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kodu Çek (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Node.js Kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' 
+
+      - name: Frontend Bağımlılıklarını Yükle
+        working-directory: ./frontend # Frontend klasörünün tam adı
+        run: npm install
+
+      - name: Frontend Build / Test Çalıştır
+        working-directory: ./frontend
+        run: |
+          npm run build
+          # npm test # Eğer frontend testleri varsa bu satır aktif edilebilir
