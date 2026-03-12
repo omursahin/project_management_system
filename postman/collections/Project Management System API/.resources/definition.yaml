@@ -1,0 +1,9 @@
+$kind: collection
+name: Project Management System API
+variables:
+  - key: baseUrl
+    value: 'http://localhost:8000'
+  - key: accessToken
+    value: ''
+  - key: refreshToken
+    value: ''
