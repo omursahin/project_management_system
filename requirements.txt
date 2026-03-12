@@ -20,3 +20,5 @@ referencing==0.37.0
 rpds-py==0.30.0
 swagger-spec-validator==3.0.4
 typing-extensions==4.15.0
+pytest
+pytest-django
