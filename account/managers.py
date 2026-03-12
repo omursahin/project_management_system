@@ -18,7 +18,7 @@ class CustomUserManager(BaseUserManager):
         if not last_name:
             raise ValueError("Soyisim alanı zorunludur.")
         if not identification_number:
-            raise ValueError("TC kimlik numarası zorunludur.")
+            raise ValueError("Öğrenci numarası zorunludur.")
 
         email = self.normalize_email(email)
         extra_fields.setdefault("is_active", True)
