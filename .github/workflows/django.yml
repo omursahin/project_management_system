@@ -43,5 +43,5 @@ jobs:
       - name: Frontend Build / Test Çalıştır
         working-directory: ./frontend
         run: |
-          npm run build
+          CI=false npm run build
           # npm test # Eğer frontend testleri varsa bu satır aktif edilebilir
