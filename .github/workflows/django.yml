@@ -37,7 +37,7 @@ jobs:
       - name: Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
-          node-version: '18' 
+          node-version: '24' 
 
       - name: Frontend Bağımlılıklarını Yükle
         working-directory: ./frontend # Frontend klasörünün tam adı
