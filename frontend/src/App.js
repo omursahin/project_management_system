@@ -36,7 +36,6 @@ function App() {
                   </Box>
                 }
               />
-              {/* Diğer sayfaları buraya ekleyeceğiz */}
             </Routes>
           </Box>
         </Flex>
