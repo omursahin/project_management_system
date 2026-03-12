@@ -1,12 +1,20 @@
-import { useState } from "react";
-import { Box, Button, Input, Text, VStack, Heading, Link, SimpleGrid } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Input,
+  VStack,
+  Heading,
+  Text,
+  Link,
+  Alert,
+  Select,
+} from "@chakra-ui/react";
 import api from "../services/api";
 
-const Register = () => {
+function Register() {
   const navigate = useNavigate();
-
-  // Form verileri
   const [formData, setFormData] = useState({
     email: "",
     first_name: "",
@@ -14,167 +22,114 @@ const Register = () => {
     identification_number: "",
     phone_number: "",
     address: "",
+    department: "",
     password: "",
     password2: "",
   });
-
-  // Hata mesajları
+  const [departments, setDepartments] = useState([]);
   const [errors, setErrors] = useState({});
-
-  // Genel hata (API'den dönen)
-  const [apiError, setApiError] = useState("");
-
-  // Başarı mesajı
-  const [success, setSuccess] = useState(false);
-
-  // Yükleniyor durumu
   const [loading, setLoading] = useState(false);
 
-  // Input değişikliği
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await api.get("/department/");
+        setDepartments(response.data);
+      } catch (error) {
+        console.error("Bölümler yüklenirken hata oluştu:", error);
+      }
+    };
+    fetchDepartments();
+  }, []);
 
-    // O alan için hatayı temizle
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
-    setApiError("");
-  };
-
-  // Client-side validasyon
-  const validate = () => {
+  const validateForm = () => {
     const newErrors = {};
 
-    // Email
-    if (!formData.email.trim()) {
-      newErrors.email = "Email zorunludur.";
+    if (!formData.email) {
+      newErrors.email = "Email zorunludur";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Geçerli bir email giriniz.";
+      newErrors.email = "Geçerli bir email giriniz";
     }
 
-    // Ad
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = "Ad zorunludur.";
+    if (!formData.first_name) {
+      newErrors.first_name = "Ad zorunludur";
     }
 
-    // Soyad
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = "Soyad zorunludur.";
+    if (!formData.last_name) {
+      newErrors.last_name = "Soyad zorunludur";
     }
 
-    // Kimlik No
-    if (!formData.identification_number.trim()) {
-      newErrors.identification_number = "Kimlik numarası zorunludur.";
+    if (!formData.identification_number) {
+      newErrors.identification_number = "Kimlik numarası zorunludur";
     } else if (!/^\d{11}$/.test(formData.identification_number)) {
-      newErrors.identification_number = "Kimlik numarası 11 haneli sayı olmalı.";
+      newErrors.identification_number = "Kimlik numarası 11 haneli sayı olmalıdır";
     }
 
-    // Telefon
-    if (!formData.phone_number.trim()) {
-      newErrors.phone_number = "Telefon numarası zorunludur.";
+    if (!formData.phone_number) {
+      newErrors.phone_number = "Telefon numarası zorunludur";
     }
 
-    // Adres
-    if (!formData.address.trim()) {
-      newErrors.address = "Adres zorunludur.";
+    if (!formData.address) {
+      newErrors.address = "Adres zorunludur";
     }
 
-    // Şifre
     if (!formData.password) {
-      newErrors.password = "Şifre zorunludur.";
+      newErrors.password = "Şifre zorunludur";
     } else if (formData.password.length < 8) {
-      newErrors.password = "Şifre en az 8 karakter olmalı.";
+      newErrors.password = "Şifre en az 8 karakter olmalıdır";
     }
 
-    // Şifre Tekrar
     if (!formData.password2) {
-      newErrors.password2 = "Şifre tekrarı zorunludur.";
+      newErrors.password2 = "Şifre tekrarı zorunludur";
     } else if (formData.password !== formData.password2) {
-      newErrors.password2 = "Şifreler eşleşmiyor.";
+      newErrors.password2 = "Şifreler eşleşmiyor";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form gönderimi
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     setLoading(true);
-    setApiError("");
+    setErrors({});
 
     try {
-      const response = await api.post("/api/account/register/", formData);
+      const response = await api.post("/account/register/", formData);
 
-      // Token'ı localStorage'a kaydet
-      if (response.data.token) {
-        localStorage.setItem("access_token", response.data.token);
-        api.defaults.headers.common["Authorization"] = `Bearer ${response.data.token}`;
-      }
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      setSuccess(true);
-
-      // 2 saniye sonra login sayfasına yönlendir
-      setTimeout(() => {
-        navigate("/login");
-      }, 2000);
+      navigate("/dashboard");
     } catch (error) {
-      if (error.response?.data) {
-        const data = error.response.data;
-
-        // Alan bazlı hatalar
-        if (typeof data === "object") {
-          const fieldErrors = {};
-          Object.keys(data).forEach((key) => {
-            if (Array.isArray(data[key])) {
-              fieldErrors[key] = data[key].join(" ");
-            } else if (typeof data[key] === "string") {
-              fieldErrors[key] = data[key];
-            }
-          });
-
-          if (Object.keys(fieldErrors).length > 0) {
-            setErrors(fieldErrors);
-          } else {
-            setApiError("Kayıt sırasında bir hata oluştu.");
-          }
-        } else {
-          setApiError(String(data));
-        }
+      if (error.response && error.response.data) {
+        setErrors(error.response.data);
       } else {
-        setApiError("Sunucuya bağlanılamadı. Lütfen tekrar deneyin.");
+        setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
       }
     } finally {
       setLoading(false);
     }
   };
-
-  // Form alanı componenti (tekrarı azaltmak için)
-  const FormField = ({ label, name, type = "text", placeholder }) => (
-    <Box w="100%">
-      <Text mb={1} fontSize="sm" fontWeight="medium" color="gray.600">
-        {label}
-      </Text>
-      <Input
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        value={formData[name]}
-        onChange={handleChange}
-        borderColor={errors[name] ? "red.400" : "gray.200"}
-        focusBorderColor="teal.400"
-      />
-      {errors[name] && (
-        <Text color="red.500" fontSize="xs" mt={1}>
-          {errors[name]}
-        </Text>
-      )}
-    </Box>
-  );
 
   return (
     <Box
@@ -183,79 +138,197 @@ const Register = () => {
       alignItems="center"
       justifyContent="center"
       bg="gray.50"
-      py={10}
+      py={8}
     >
       <Box
         bg="white"
         p={8}
-        rounded="lg"
+        borderRadius="lg"
         boxShadow="lg"
-        w={{ base: "90%", sm: "500px" }}
+        w={{ base: "90%", md: "500px" }}
       >
-        <VStack spacing={5} as="form" onSubmit={handleSubmit}>
-          {/* Başlık */}
-          <Heading size="lg" color="teal.500">
+        <VStack gap={4} align="stretch">
+          <Heading size="lg" textAlign="center">
             Kayıt Ol
           </Heading>
 
-          {/* Başarı Mesajı */}
-          {success && (
-            <Box w="100%" p={3} bg="green.50" borderRadius="md" border="1px" borderColor="green.200">
-              <Text color="green.600" fontSize="sm" textAlign="center">
-                Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...
-              </Text>
-            </Box>
+          {errors.general && (
+            <Alert.Root status="error">
+              <Alert.Indicator />
+              <Alert.Title>{errors.general}</Alert.Title>
+            </Alert.Root>
           )}
 
-          {/* API Hata Mesajı */}
-          {apiError && (
-            <Box w="100%" p={3} bg="red.50" borderRadius="md" border="1px" borderColor="red.200">
-              <Text color="red.600" fontSize="sm" textAlign="center">
-                {apiError}
-              </Text>
-            </Box>
-          )}
+          <form onSubmit={handleSubmit}>
+            <VStack gap={4} align="stretch">
+              <Box>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.email && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.email}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Ad - Soyad yan yana */}
-          <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="100%">
-            <FormField label="Ad" name="first_name" placeholder="Adınız" />
-            <FormField label="Soyad" name="last_name" placeholder="Soyadınız" />
-          </SimpleGrid>
+              <Box>
+                <Input
+                  type="text"
+                  name="first_name"
+                  placeholder="Ad"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.first_name && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.first_name}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Email */}
-          <FormField label="Email" name="email" type="email" placeholder="ornek@email.com" />
+              <Box>
+                <Input
+                  type="text"
+                  name="last_name"
+                  placeholder="Soyad"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.last_name && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.last_name}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Kimlik No - Telefon yan yana */}
-          <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="100%">
-            <FormField label="Kimlik Numarası" name="identification_number" placeholder="11 haneli TC No" />
-            <FormField label="Telefon" name="phone_number" placeholder="05xx xxx xx xx" />
-          </SimpleGrid>
+              <Box>
+                <Input
+                  type="text"
+                  name="identification_number"
+                  placeholder="Kimlik Numarası (11 haneli)"
+                  value={formData.identification_number}
+                  onChange={handleChange}
+                  disabled={loading}
+                  maxLength={11}
+                />
+                {errors.identification_number && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.identification_number}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Adres */}
-          <FormField label="Adres" name="address" placeholder="Adresiniz" />
+              <Box>
+                <Input
+                  type="tel"
+                  name="phone_number"
+                  placeholder="Telefon Numarası"
+                  value={formData.phone_number}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.phone_number && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.phone_number}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Şifre - Şifre Tekrar yan yana */}
-          <SimpleGrid columns={{ base: 1, sm: 2 }} spacing={4} w="100%">
-            <FormField label="Şifre" name="password" type="password" placeholder="En az 8 karakter" />
-            <FormField label="Şifre Tekrar" name="password2" type="password" placeholder="Şifrenizi tekrar giriniz" />
-          </SimpleGrid>
+              <Box>
+                <Input
+                  type="text"
+                  name="address"
+                  placeholder="Adres"
+                  value={formData.address}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.address && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.address}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Kayıt Butonu */}
-          <Button
-            type="submit"
-            colorScheme="teal"
-            w="100%"
-            isLoading={loading}
-            loadingText="Kayıt yapılıyor..."
-            isDisabled={success}
-          >
-            Kayıt Ol
-          </Button>
+              <Box>
+                <Select.Root
+                  collection={departments}
+                  name="department"
+                  value={[formData.department]}
+                  onValueChange={(e) =>
+                    handleChange({
+                      target: { name: "department", value: e.value[0] },
+                    })
+                  }
+                  disabled={loading}
+                >
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Bölüm Seçiniz (Opsiyonel)" />
+                  </Select.Trigger>
+                  <Select.Content>
+                    {departments.map((dept) => (
+                      <Select.Item key={dept.id} item={dept.id}>
+                        {dept.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+                {errors.department && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.department}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Giriş Linki */}
-          <Text fontSize="sm" color="gray.500">
-            Zaten hesabın var mı?{" "}
-            <Link color="teal.500" fontWeight="bold" href="/login">
+              <Box>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Şifre (en az 8 karakter)"
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.password && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.password}
+                  </Text>
+                )}
+              </Box>
+
+              <Box>
+                <Input
+                  type="password"
+                  name="password2"
+                  placeholder="Şifre Tekrarı"
+                  value={formData.password2}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.password2 && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.password2}
+                  </Text>
+                )}
+              </Box>
+
+              <Button type="submit" colorScheme="blue" loading={loading}>
+                Kayıt Ol
+              </Button>
+            </VStack>
+          </form>
+
+          <Text textAlign="center">
+            Zaten hesabınız var mı?{" "}
+            <Link color="blue.500" href="/login">
               Giriş Yap
             </Link>
           </Text>
@@ -263,6 +336,6 @@ const Register = () => {
       </Box>
     </Box>
   );
-};
+}
 
 export default Register;

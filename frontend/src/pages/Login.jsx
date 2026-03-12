@@ -1,91 +1,83 @@
 import { useState } from "react";
-import { Box, Button, Input, Text, VStack, Heading, Link } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Input,
+  VStack,
+  Heading,
+  Text,
+  Link,
+  Alert,
+} from "@chakra-ui/react";
 import api from "../services/api";
 
-const Login = () => {
+function Login() {
   const navigate = useNavigate();
-
-  // Form verileri
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
-  // Hata mesajları
   const [errors, setErrors] = useState({});
-
-  // Genel hata (API'den dönen)
-  const [apiError, setApiError] = useState("");
-
-  // Yükleniyor durumu
   const [loading, setLoading] = useState(false);
 
-  // Input değişikliği
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-
-    // O alan için hatayı temizle
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
-    setApiError("");
-  };
-
-  // Client-side validasyon
-  const validate = () => {
+  const validateForm = () => {
     const newErrors = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = "Email alanı zorunludur.";
+    if (!formData.email) {
+      newErrors.email = "Email zorunludur";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Geçerli bir email adresi giriniz.";
+      newErrors.email = "Geçerli bir email giriniz";
     }
 
     if (!formData.password) {
-      newErrors.password = "Şifre alanı zorunludur.";
+      newErrors.password = "Şifre zorunludur";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  // Form gönderimi
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     setLoading(true);
-    setApiError("");
+    setErrors({});
 
     try {
-      const response = await api.post("/api/v1/token/", {
-        email: formData.email,
-        password: formData.password,
-      });
+      const response = await api.post("/account/login/", formData);
 
-      // Token'ları localStorage'a kaydet
-      localStorage.setItem("access_token", response.data.access);
-      localStorage.setItem("refresh_token", response.data.refresh);
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      // axios header'ına token ekle
-      api.defaults.headers.common["Authorization"] = `Bearer ${response.data.access}`;
-
-      // Dashboard'a yönlendir
       navigate("/dashboard");
     } catch (error) {
-      if (error.response) {
-        if (error.response.status === 401) {
-          setApiError("Email veya şifre hatalı.");
-        } else if (error.response.data?.detail) {
-          setApiError(error.response.data.detail);
+      if (error.response && error.response.data) {
+        if (error.response.data.error) {
+          setErrors({ general: error.response.data.error });
         } else {
-          setApiError("Giriş yapılırken bir hata oluştu.");
+          setErrors(error.response.data);
         }
       } else {
-        setApiError("Sunucuya bağlanılamadı. Lütfen tekrar deneyin.");
+        setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
       }
     } finally {
       setLoading(false);
@@ -103,82 +95,65 @@ const Login = () => {
       <Box
         bg="white"
         p={8}
-        rounded="lg"
+        borderRadius="lg"
         boxShadow="lg"
-        w={{ base: "90%", sm: "400px" }}
+        w={{ base: "90%", md: "400px" }}
       >
-        <VStack spacing={6} as="form" onSubmit={handleSubmit}>
-          {/* Başlık */}
-          <Heading size="lg" color="teal.500">
+        <VStack gap={4} align="stretch">
+          <Heading size="lg" textAlign="center">
             Giriş Yap
           </Heading>
 
-          {/* API Hata Mesajı */}
-          {apiError && (
-            <Box w="100%" p={3} bg="red.50" borderRadius="md" border="1px" borderColor="red.200">
-              <Text color="red.600" fontSize="sm" textAlign="center">
-                {apiError}
-              </Text>
-            </Box>
+          {errors.general && (
+            <Alert.Root status="error">
+              <Alert.Indicator />
+              <Alert.Title>{errors.general}</Alert.Title>
+            </Alert.Root>
           )}
 
-          {/* Email */}
-          <Box w="100%">
-            <Text mb={1} fontSize="sm" fontWeight="medium" color="gray.600">
-              Email
-            </Text>
-            <Input
-              name="email"
-              type="email"
-              placeholder="ornek@email.com"
-              value={formData.email}
-              onChange={handleChange}
-              borderColor={errors.email ? "red.400" : "gray.200"}
-              focusBorderColor="teal.400"
-            />
-            {errors.email && (
-              <Text color="red.500" fontSize="xs" mt={1}>
-                {errors.email}
-              </Text>
-            )}
-          </Box>
+          <form onSubmit={handleSubmit}>
+            <VStack gap={4} align="stretch">
+              <Box>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.email && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.email}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Şifre */}
-          <Box w="100%">
-            <Text mb={1} fontSize="sm" fontWeight="medium" color="gray.600">
-              Şifre
-            </Text>
-            <Input
-              name="password"
-              type="password"
-              placeholder="Şifrenizi giriniz"
-              value={formData.password}
-              onChange={handleChange}
-              borderColor={errors.password ? "red.400" : "gray.200"}
-              focusBorderColor="teal.400"
-            />
-            {errors.password && (
-              <Text color="red.500" fontSize="xs" mt={1}>
-                {errors.password}
-              </Text>
-            )}
-          </Box>
+              <Box>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Şifre"
+                  value={formData.password}
+                  onChange={handleChange}
+                  disabled={loading}
+                />
+                {errors.password && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    {errors.password}
+                  </Text>
+                )}
+              </Box>
 
-          {/* Giriş Butonu */}
-          <Button
-            type="submit"
-            colorScheme="teal"
-            w="100%"
-            isLoading={loading}
-            loadingText="Giriş yapılıyor..."
-          >
-            Giriş Yap
-          </Button>
+              <Button type="submit" colorScheme="blue" loading={loading}>
+                Giriş Yap
+              </Button>
+            </VStack>
+          </form>
 
-          {/* Kayıt Linki */}
-          <Text fontSize="sm" color="gray.500">
-            Hesabın yok mu?{" "}
-            <Link color="teal.500" fontWeight="bold" href="/register">
+          <Text textAlign="center">
+            Hesabınız yok mu?{" "}
+            <Link color="blue.500" href="/register">
               Kayıt Ol
             </Link>
           </Text>
@@ -186,6 +161,6 @@ const Login = () => {
       </Box>
     </Box>
   );
-};
+}
 
 export default Login;
