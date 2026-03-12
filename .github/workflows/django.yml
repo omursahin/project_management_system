@@ -1,4 +1,4 @@
-name: Django CI & Frontend Check
+name: Django CI & Frontend Check (CI Check)
 
 on:
   push:
