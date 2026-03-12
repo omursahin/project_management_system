@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 import Footer from "./components/Footer";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 function App() {
   return (
@@ -36,6 +38,9 @@ function App() {
                   </Box>
                 }
               />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
             </Routes>
           </Box>
         </Flex>
