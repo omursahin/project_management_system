@@ -1,3 +1,5 @@
+![CI Status](https://github.com/omursahin/project_management_system/actions/workflows/ci.yml/badge.svg)
+
 # project_management_system
 | Grup | Sorumluluk Alanı | Epic'ler |
 |------|-----------------|----------|
