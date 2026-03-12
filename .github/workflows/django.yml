@@ -1,9 +1,6 @@
 name: Django CI & Frontend Check (CI Check)
 
-on:
-  push:
-    branches: [ "master" ]
-
+on: [push]
 
 jobs:
   backend-test:
