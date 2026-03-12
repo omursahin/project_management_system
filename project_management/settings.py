@@ -148,9 +148,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 SIMPLE_JWT = {
@@ -163,8 +161,6 @@ SIMPLE_JWT = {
 }
 
 # TODO: Change this when we get the frontend URL in the production
-CORS_ALLOWED_ORIGINS = [
-    "*"
-]
+CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
 
-
+AUTH_USER_MODEL = "account.MyUser"
