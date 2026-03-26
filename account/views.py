@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,15 +16,12 @@ class RegisterView(APIView):
 
         if serializer.is_valid():
             user = serializer.save()
-            refresh = RefreshToken.for_user(user)
+            token, created = Token.objects.get_or_create(user=user)
 
             return Response(
                 {
                     "message": "Kayıt başarılı.",
-                    "tokens": {
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
-                    },
+                    "token": token.key,
                     "user": {
                         "id": user.id,
                         "email": user.email,
