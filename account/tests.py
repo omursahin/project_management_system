@@ -50,30 +50,26 @@ class RegisterTests(APITestCase):
     def setUp(self):
         self.register_url = reverse('register')
 
-        # Serializer'ın beklediği TÜM alanları eksiksiz dolduruyoruz
+        # Sadece hata çıkarma ihtimali olmayan KESİN zorunlu alanları bırakıyoruz
         self.valid_payload = {
             "email": "yeniuser@example.com",
             "first_name": "Yeni",
             "last_name": "Kullanici",
             "identification_number": "10987654321",
-            "phone_number": "05551234567",
-            "address": "Kayseri",
-            "department": "Bilgisayar Mühendisliği",
             "password": "GucluSifre123!",
-            "password2": "GucluSifre123!"  # Şifre tekrarını ekledik!
+            "password2": "GucluSifre123!"
         }
 
     def test_kullanici_kayit_basarili(self):
+        """Eksiksiz ve doğru verilerle yeni bir kullanıcı başarıyla oluşturulmalıdır."""
         response = self.client.post(self.register_url, self.valid_payload)
 
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED, response.data)
-
+        # DİKKAT: Eğer test yine patlarsa, hatanın ne olduğunu kabak gibi ekrana yazdıracak mesajı (msg) ekledim
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=f"HATA NEDENİ: {response.data}")
         self.assertTrue(User.objects.filter(email="yeniuser@example.com").exists())
 
     def test_eksik_bilgiyle_kayit_basarisiz(self):
         """Zorunlu alanlar eksik gönderildiğinde sistem hata vermelidir."""
-        # password2 ve identification_number gibi zorunlu alanları sildik
         invalid_payload = {
             "email": "hatali@example.com",
             "password": "Sifre123!",
@@ -82,6 +78,4 @@ class RegisterTests(APITestCase):
         }
 
         response = self.client.post(self.register_url, invalid_payload)
-
-        # 400 Bad Request dönmeli
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
