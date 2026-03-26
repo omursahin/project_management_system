@@ -4,7 +4,7 @@ from .models import University
 class UniversityEklemeSilmeTestleri(TestCase):
 
     def test_universite_ekleme(self):
-        # Arkadaşının modelindeki doğru alan adları (title, description, city_code) ile üniversite oluşturuyoruz
+
         yeni_uni = University.objects.create(
             title="Teknoloji Üniversitesi",
             description="Türkiye'nin en iyi teknoloji üniversitelerinden biri.",
