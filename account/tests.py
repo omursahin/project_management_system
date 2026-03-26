@@ -20,11 +20,10 @@ class AuthTests(APITestCase):
         )
 
         self.login_url = reverse('token_obtain_pair')
-        #self.logout_url = reverse('logout')
+        # Logout URL'ini sildik çünkü henüz urls.py içinde böyle bir endpoint yok
 
     def test_kullanici_girisi_basarili(self):
         """Kullanıcı doğru bilgilerle giriş yaptığında token (200 OK) almalıdır."""
-        # Giriş yaparken username yerine email gönderiyoruz
         data = {
             "email": self.email,
             "password": self.password
@@ -36,6 +35,7 @@ class AuthTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_kullanici_girisi_basarisiz(self):
+        """Kullanıcı yanlış şifre girdiğinde giriş yapamamalıdır."""
         data = {
             "email": self.email,
             "password": "YanlisSifre!"
@@ -44,11 +44,4 @@ class AuthTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # def test_kullanici_cikisi(self):
-    #     # Önce email ve şifre ile giriş yapıp token alalım
-    #     login_response = self.client.post(self.login_url, {"email": self.email, "password": self.password})
-    #
-    #     refresh_token = login_response.data.get('refresh')
-    #
-    #     response = self.client.post(self.logout_url, {"refresh": refresh_token})
-    #     self.assertEqual(response.status_code, status.HTTP_205_RESET_CONTENT)
+    # Çıkış testi fonksiyonunu da tamamen sildik
