@@ -50,21 +50,22 @@ class RegisterTests(APITestCase):
     def setUp(self):
         self.register_url = reverse('register')
 
-        # Sadece hata çıkarma ihtimali olmayan KESİN zorunlu alanları bırakıyoruz
+        # Django'nun bizden zorunlu olarak beklediği adresi ve telefonu ekledik
         self.valid_payload = {
             "email": "yeniuser@example.com",
             "first_name": "Yeni",
             "last_name": "Kullanici",
             "identification_number": "10987654321",
             "password": "GucluSifre123!",
-            "password2": "GucluSifre123!"
+            "password2": "GucluSifre123!",
+            "phone_number": "05551234567",  # Eksik olan zorunlu alan
+            "address": "Kayseri Merkez"  # Eksik olan zorunlu alan
         }
 
     def test_kullanici_kayit_basarili(self):
         """Eksiksiz ve doğru verilerle yeni bir kullanıcı başarıyla oluşturulmalıdır."""
         response = self.client.post(self.register_url, self.valid_payload)
 
-        # DİKKAT: Eğer test yine patlarsa, hatanın ne olduğunu kabak gibi ekrana yazdıracak mesajı (msg) ekledim
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=f"HATA NEDENİ: {response.data}")
         self.assertTrue(User.objects.filter(email="yeniuser@example.com").exists())
 
