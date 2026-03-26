@@ -20,6 +20,7 @@ class AuthTests(APITestCase):
         )
 
         self.login_url = reverse('token_obtain_pair')
+        # Logout URL'ini sildik çünkü henüz urls.py içinde böyle bir endpoint yok
 
     def test_kullanici_girisi_basarili(self):
         """Kullanıcı doğru bilgilerle giriş yaptığında token (200 OK) almalıdır."""
@@ -42,45 +43,58 @@ class AuthTests(APITestCase):
         response = self.client.post(self.login_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-
-# --- YENİ EKLENEN KAYIT (REGISTER) TESTLERİ ---
-
-class RegisterTests(APITestCase):
+class AuthTests(APITestCase):
     def setUp(self):
-        # urls.py dosyasındaki name='register' kısmını kullanıyoruz
-        self.register_url = reverse('register')
+        self.email = "testuser@example.com"
+        self.password = "TestSifresi123!"
 
-        # Başarılı kayıt için göndereceğimiz örnek kullanıcı verisi
-        self.valid_payload = {
-            "email": "yeniuser@example.com",
+        self.user = User.objects.create_user(
+            email=self.email,
+            password=self.password,
+            first_name="Test",
+            last_name="Kullanicisi",
+            identification_number="12345678901"
+        )
+
+        self.login_url = reverse('token_obtain_pair')
+        self.register_url = reverse('register')  # ✅ EKLENDİ
+
+    def test_kullanici_kaydi_basarili(self):
+        """Yeni kullanıcı başarılı şekilde kayıt olabilmelidir."""
+        data = {
+            "email": "newuser@example.com",
             "password": "GucluSifre123!",
             "first_name": "Yeni",
             "last_name": "Kullanici",
-            "identification_number": "10987654321"
+            "identification_number": "98765432109"
         }
 
-    def test_kullanici_kayit_basarili(self):
-        response = self.client.post(self.register_url, self.valid_payload)
-
-        print("\n=== SERİALİZER HATASI BURADA ===")
-        print(response.data)
-        print("================================\n")
+        response = self.client.post(self.register_url, data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(User.objects.filter(email=data["email"]).exists())
 
-        self.assertTrue(User.objects.filter(email="yeniuser@example.com").exists())
-
-    def test_eksik_bilgiyle_kayit_basarisiz(self):
-        """Zorunlu alanlar eksik gönderildiğinde sistem hata vermelidir."""
-        # first_name ve identification_number göndermiyoruz bilerek
-        invalid_payload = {
-            "email": "hatali@example.com",
-            "password": "Sifre123!",
-            "last_name": "Kullanici"
+    def test_kullanici_kaydi_ayni_email(self):
+        """Aynı email ile ikinci kayıt engellenmelidir."""
+        data = {
+            "email": self.email,  # zaten var
+            "password": "GucluSifre123!",
+            "first_name": "Yeni",
+            "last_name": "Kullanici",
+            "identification_number": "98765432109"
         }
 
-        response = self.client.post(self.register_url, invalid_payload)
+        response = self.client.post(self.register_url, data)
 
-        # 400 Bad Request dönmeli
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_kullanici_kaydi_eksik_bilgi(self):
+        """Eksik bilgi ile kayıt başarısız olmalıdır."""
+        data = {
+            "email": "eksik@example.com",
+            # password yok
+        }
+
+        response = self.client.post(self.register_url, data)
+
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
