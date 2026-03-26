@@ -138,5 +138,7 @@ htmlcov/
 
 # Postman collections and environments
 postman/
+.postman/
+*.resources/
 
 
