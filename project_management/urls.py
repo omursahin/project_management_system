@@ -44,6 +44,7 @@ urlpatterns = [
     path("api/account/", include("account.urls")),
     path("api/term/", include("term.urls")),
     path("api/department/", include("department.urls")),
+    path("api/term-lesson/", include("term_lesson.urls")),
     # drf-yasg
     path(
         "swagger.<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
