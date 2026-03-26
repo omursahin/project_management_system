@@ -31,5 +31,3 @@ urlpatterns = [
     path("api/university/", include("university.urls")),
 ]
 
-
-
