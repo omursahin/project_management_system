@@ -8,7 +8,7 @@ class UniversityEklemeSilmeTestleri(TestCase):
         yeni_uni = University.objects.create(
             title="Teknoloji Üniversitesi",
             description="Türkiye'nin en iyi teknoloji üniversitelerinden biri.",
-            city_code="38"  # Kayseri'nin plakası olsun bari! 😎
+            city_code="38"
         )
 
         # Veritabanında 1 tane üniversite olduğunu ve adının (title) doğru kaydedildiğini test et
