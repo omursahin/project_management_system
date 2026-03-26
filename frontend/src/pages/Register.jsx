@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -9,9 +9,10 @@ import {
   Text,
   Link,
   Alert,
-  Select,
 } from "@chakra-ui/react";
-import api from "../services/api.js";
+import { useDepartmentsQuery } from "../hooks/useDepartments.js";
+import { useRegisterMutation } from "../hooks/useAuth.js";
+import { getApiErrorData } from "../services/api.js";
 
 function Register() {
   const navigate = useNavigate();
@@ -26,21 +27,21 @@ function Register() {
     password: "",
     password2: "",
   });
-  const [departments, setDepartments] = useState([]);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const registerMutation = useRegisterMutation({
+    onSuccess: () => {
+      navigate("/dashboard");
+    },
+  });
+  const {
+    data: departments = [],
+    isLoading: isDepartmentsLoading,
+    isError: hasDepartmentsError,
+  } = useDepartmentsQuery({
+    retry: 0,
+  });
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const response = await api.get("/department/");
-        setDepartments(response.data);
-      } catch (error) {
-        console.error("Bölümler yüklenirken hata oluştu:", error);
-      }
-    };
-    fetchDepartments();
-  }, []);
+  const loading = registerMutation.isPending;
 
   const validateForm = () => {
     const newErrors = {};
@@ -110,25 +111,20 @@ function Register() {
       return;
     }
 
-    setLoading(true);
     setErrors({});
 
-    try {
-      const response = await api.post("/account/register/", formData);
+    registerMutation.mutate(formData, {
+      onError: (error) => {
+        const apiErrors = getApiErrorData(error);
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+        if (apiErrors) {
+          setErrors(apiErrors);
+          return;
+        }
 
-      navigate("/dashboard");
-    } catch (error) {
-      if (error.response && error.response.data) {
-        setErrors(error.response.data);
-      } else {
         setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
-      }
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   return (
@@ -259,28 +255,37 @@ function Register() {
               </Box>
 
               <Box>
-                <Select.Root
-                  collection={departments}
+                <Box
+                  as="select"
                   name="department"
-                  value={[formData.department]}
-                  onValueChange={(e) =>
-                    handleChange({
-                      target: { name: "department", value: e.value[0] },
-                    })
-                  }
-                  disabled={loading}
+                  value={formData.department}
+                  onChange={handleChange}
+                  disabled={loading || isDepartmentsLoading}
+                  w="100%"
+                  px={4}
+                  py={2}
+                  borderWidth="1px"
+                  borderColor="gray.200"
+                  borderRadius="md"
+                  bg="white"
                 >
-                  <Select.Trigger>
-                    <Select.ValueText placeholder="Bölüm Seçiniz (Opsiyonel)" />
-                  </Select.Trigger>
-                  <Select.Content>
-                    {departments.map((dept) => (
-                      <Select.Item key={dept.id} item={dept.id}>
-                        {dept.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                  <option value="">Bölüm Seçiniz (Opsiyonel)</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </Box>
+                {isDepartmentsLoading && (
+                  <Text color="gray.500" fontSize="sm" mt={1}>
+                    Bölümler yükleniyor...
+                  </Text>
+                )}
+                {hasDepartmentsError && (
+                  <Text color="orange.500" fontSize="sm" mt={1}>
+                    Bölümler şu anda yüklenemedi. Kayıt yine de devam edebilir.
+                  </Text>
+                )}
                 {errors.department && (
                   <Text color="red.500" fontSize="sm" mt={1}>
                     {errors.department}

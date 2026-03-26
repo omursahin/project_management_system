@@ -10,7 +10,8 @@ import {
   Link,
   Alert,
 } from "@chakra-ui/react";
-import api from "../services/api.js";
+import { useLoginMutation } from "../hooks/useAuth.js";
+import { getApiErrorData } from "../services/api.js";
 
 function Login() {
   const navigate = useNavigate();
@@ -19,7 +20,13 @@ function Login() {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const loginMutation = useLoginMutation({
+    onSuccess: () => {
+      navigate("/dashboard");
+    },
+  });
+
+  const loading = loginMutation.isPending;
 
   const validateForm = () => {
     const newErrors = {};
@@ -59,29 +66,25 @@ function Login() {
       return;
     }
 
-    setLoading(true);
     setErrors({});
 
-    try {
-      const response = await api.post("/account/login/", formData);
+    loginMutation.mutate(formData, {
+      onError: (error) => {
+        const apiErrors = getApiErrorData(error);
 
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      navigate("/dashboard");
-    } catch (error) {
-      if (error.response && error.response.data) {
-        if (error.response.data.error) {
-          setErrors({ general: error.response.data.error });
-        } else {
-          setErrors(error.response.data);
+        if (apiErrors?.error) {
+          setErrors({ general: apiErrors.error });
+          return;
         }
-      } else {
+
+        if (apiErrors) {
+          setErrors(apiErrors);
+          return;
+        }
+
         setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
-      }
-    } finally {
-      setLoading(false);
-    }
+      },
+    });
   };
 
   return (
