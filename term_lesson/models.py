@@ -1,11 +1,5 @@
 from django.db import models
 
-
-class TermLesson(models.Model):
-    id = models.BigAutoField(primary_key=True)
-
-    def __str__(self):
-        return f"TermLesson {self.id}"
 # Create your models here.
 class TermLesson(models.Model):
     term = models.ForeignKey('term.Term', on_delete=models.CASCADE)
