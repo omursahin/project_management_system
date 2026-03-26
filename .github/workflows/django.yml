@@ -13,12 +13,12 @@ jobs:
       - name: Python Kurulumu
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Bağımlılıkları Yükle
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt 
+          pip install -r requirements.txt
 
       - name: Pytest Çalıştır
         run: |
@@ -34,14 +34,19 @@ jobs:
       - name: Node.js Kurulumu
         uses: actions/setup-node@v4
         with:
-          node-version: '24' 
+          node-version: "24"
 
       - name: Frontend Bağımlılıklarını Yükle
         working-directory: ./frontend # Frontend klasörünün tam adı
         run: npm install
 
-      - name: Frontend Build / Test Çalıştır
+      - name: Frontend Build Çalıştır
         working-directory: ./frontend
         run: |
           CI=false npm run build
-          # npm test # Eğer frontend testleri varsa bu satır aktif edilebilir
+
+      - name: Frontend Testleri Çalıştır
+        working-directory: ./frontend
+        run: npx vitest run
+
+
