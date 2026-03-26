@@ -49,7 +49,7 @@ class FacultyEklemeSilmeGuncellemeTestleri(TestCase):
             description="Eski açıklama"
         )
 
-        # URL olmadan, Python üzerinden ismi güncelliyoruz
+        # URL olmadan Python üzerinden ismi güncelliyoruz
         guncellenecek_fakulte.title = "Yeni Fakülte Adı"
         guncellenecek_fakulte.save()
 

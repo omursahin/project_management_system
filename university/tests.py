@@ -17,7 +17,7 @@ class UniversityEklemeSilmeTestleri(TestCase):
         print("✅ Üniversite Ekleme Testi Geçti!")
 
     def test_universite_silme(self):
-        # Doğrudan veritabanında oluşturup silme
+        # Doğrudan veritabanında oluşturup silmek
         silinecek_uni = University.objects.create(
             title="Silinecek Üniversite",
             description="Bu üniversite birazdan yok olacak.",
@@ -26,7 +26,7 @@ class UniversityEklemeSilmeTestleri(TestCase):
 
         self.assertEqual(University.objects.count(), 1)
 
-        # Yok et
+        # Yok etmek
         silinecek_uni.delete()
 
         self.assertEqual(University.objects.count(), 0)
