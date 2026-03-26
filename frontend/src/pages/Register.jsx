@@ -11,7 +11,7 @@ import {
   Alert,
   Select,
 } from "@chakra-ui/react";
-import api from "../services/api";
+import api from "../services/api.js";
 
 function Register() {
   const navigate = useNavigate();

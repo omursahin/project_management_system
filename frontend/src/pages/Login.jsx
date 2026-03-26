@@ -10,7 +10,7 @@ import {
   Link,
   Alert,
 } from "@chakra-ui/react";
-import api from "../services/api";
+import api from "../services/api.js";
 
 function Login() {
   const navigate = useNavigate();
