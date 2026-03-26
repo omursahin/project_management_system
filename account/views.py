@@ -49,6 +49,7 @@ class LoginView(APIView):
             user = serializer.validated_data["user"]
             refresh = RefreshToken.for_user(user)
 
+
             return Response(
                 {
                     "message": "Giriş başarılı.",

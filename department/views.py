@@ -10,6 +10,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     CRUD endpoints for Department.
     """
 
+
     serializer_class = DepartmentSerializer
 
     def get_queryset(self):
