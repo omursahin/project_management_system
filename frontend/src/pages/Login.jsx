@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import {
   Box,
   Button,
@@ -10,7 +11,7 @@ import {
   Link,
   Alert,
 } from "@chakra-ui/react";
-import api from "../services/api.js";
+import { loginUser } from "../services/api.js";
 
 function Login() {
   const navigate = useNavigate();
@@ -19,7 +20,28 @@ function Login() {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const loginMutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/dashboard");
+    },
+    onError: (error) => {
+      if (error.response?.data?.error) {
+        setErrors({ general: error.response.data.error });
+        return;
+      }
+
+      if (error.response?.data) {
+        setErrors(error.response.data);
+        return;
+      }
+
+      setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
+    },
+  });
+  const isLoading = loginMutation.isPending;
 
   const validateForm = () => {
     const newErrors = {};
@@ -59,29 +81,8 @@ function Login() {
       return;
     }
 
-    setLoading(true);
     setErrors({});
-
-    try {
-      const response = await api.post("/account/login/", formData);
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      navigate("/dashboard");
-    } catch (error) {
-      if (error.response && error.response.data) {
-        if (error.response.data.error) {
-          setErrors({ general: error.response.data.error });
-        } else {
-          setErrors(error.response.data);
-        }
-      } else {
-        setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
-      }
-    } finally {
-      setLoading(false);
-    }
+    await loginMutation.mutateAsync(formData);
   };
 
   return (
@@ -120,7 +121,7 @@ function Login() {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 {errors.email && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -136,7 +137,7 @@ function Login() {
                   placeholder="Şifre"
                   value={formData.password}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 {errors.password && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -145,7 +146,7 @@ function Login() {
                 )}
               </Box>
 
-              <Button type="submit" colorScheme="blue" loading={loading}>
+              <Button type="submit" colorScheme="blue" loading={isLoading}>
                 Giriş Yap
               </Button>
             </VStack>
@@ -153,7 +154,7 @@ function Login() {
 
           <Text textAlign="center">
             Hesabınız yok mu?{" "}
-            <Link color="blue.500" href="/register">
+            <Link as={RouterLink} color="blue.500" to="/register">
               Kayıt Ol
             </Link>
           </Text>
