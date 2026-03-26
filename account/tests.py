@@ -22,7 +22,6 @@ class AuthTests(APITestCase):
         self.login_url = reverse('token_obtain_pair')
 
     def test_kullanici_girisi_basarili(self):
-        """Kullanıcı doğru bilgilerle giriş yaptığında token (200 OK) almalıdır."""
         data = {
             "email": self.email,
             "password": self.password
@@ -34,7 +33,6 @@ class AuthTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_kullanici_girisi_basarisiz(self):
-        """Kullanıcı yanlış şifre girdiğinde giriş yapamamalıdır."""
         data = {
             "email": self.email,
             "password": "YanlisSifre!"
@@ -44,13 +42,11 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
 
-# --- KAYIT (REGISTER) TESTLERİ ---
 
 class RegisterTests(APITestCase):
     def setUp(self):
         self.register_url = reverse('register')
 
-        # Django'nun bizden zorunlu olarak beklediği adresi ve telefonu ekledik
         self.valid_payload = {
             "email": "yeniuser@example.com",
             "first_name": "Yeni",
@@ -63,14 +59,12 @@ class RegisterTests(APITestCase):
         }
 
     def test_kullanici_kayit_basarili(self):
-        """Eksiksiz ve doğru verilerle yeni bir kullanıcı başarıyla oluşturulmalıdır."""
         response = self.client.post(self.register_url, self.valid_payload)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED, msg=f"HATA NEDENİ: {response.data}")
         self.assertTrue(User.objects.filter(email="yeniuser@example.com").exists())
 
     def test_eksik_bilgiyle_kayit_basarisiz(self):
-        """Zorunlu alanlar eksik gönderildiğinde sistem hata vermelidir."""
         invalid_payload = {
             "email": "hatali@example.com",
             "password": "Sifre123!",
