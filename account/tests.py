@@ -8,28 +8,27 @@ User = get_user_model()
 
 class AuthTests(APITestCase):
     def setUp(self):
-        self.username = "testuser"
+        # username'i sildik, yerine email ile işlem yapacağız
+        self.email = "testuser@example.com"
         self.password = "TestSifresi123!"
 
+        # Sadece modelinde gerçekten var olan alanları gönderiyoruz
         self.user = User.objects.create_user(
-            username=self.username,
+            email=self.email,
             password=self.password,
-            email="testuser@example.com",
             first_name="Test",
             last_name="Kullanicisi",
             identification_number="12345678901"
         )
 
         self.login_url = reverse('token_obtain_pair')
-
-        # NOT: urls.py dosyasında çıkış işlemi için verdiğin 'name' neyse
-        # buradaki 'logout' kısmını ona göre güncellemen gerekebilir (örn: 'token_blacklist' olabilir)
         self.logout_url = reverse('logout')
 
     def test_kullanici_girisi_basarili(self):
         """Kullanıcı doğru bilgilerle giriş yaptığında token (200 OK) almalıdır."""
+        # Giriş yaparken username yerine email gönderiyoruz
         data = {
-            "username": self.username,
+            "email": self.email,
             "password": self.password
         }
         response = self.client.post(self.login_url, data)
@@ -41,7 +40,7 @@ class AuthTests(APITestCase):
     def test_kullanici_girisi_basarisiz(self):
         """Kullanıcı yanlış şifre girdiğinde giriş yapamamalıdır."""
         data = {
-            "username": self.username,
+            "email": self.email,
             "password": "YanlisSifre!"
         }
         response = self.client.post(self.login_url, data)
@@ -50,10 +49,11 @@ class AuthTests(APITestCase):
 
     def test_kullanici_cikisi(self):
         """Kullanıcı refresh token'ı ile başarılı bir şekilde çıkış yapabilmelidir."""
-        # Önce giriş yapıp token alalım
-        login_response = self.client.post(self.login_url, {"username": self.username, "password": self.password})
+        # Önce email ve şifre ile giriş yapıp token alalım
+        login_response = self.client.post(self.login_url, {"email": self.email, "password": self.password})
 
         refresh_token = login_response.data.get('refresh')
 
+        # Sonra o token ile çıkış (blacklist) isteği atalım
         response = self.client.post(self.logout_url, {"refresh": refresh_token})
         self.assertEqual(response.status_code, status.HTTP_205_RESET_CONTENT)
