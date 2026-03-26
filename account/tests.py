@@ -61,13 +61,14 @@ class RegisterTests(APITestCase):
         }
 
     def test_kullanici_kayit_basarili(self):
-        """Eksiksiz ve doğru verilerle yeni bir kullanıcı başarıyla oluşturulmalıdır."""
         response = self.client.post(self.register_url, self.valid_payload)
 
-        # 201 Created dönmeli
+        print("\n=== SERİALİZER HATASI BURADA ===")
+        print(response.data)
+        print("================================\n")
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        # Veritabanında gerçekten böyle bir kullanıcı oluştu mu diye teyit edelim
         self.assertTrue(User.objects.filter(email="yeniuser@example.com").exists())
 
     def test_eksik_bilgiyle_kayit_basarisiz(self):
