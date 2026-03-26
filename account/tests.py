@@ -36,7 +36,6 @@ class AuthTests(APITestCase):
         self.assertIn('refresh', response.data)
 
     def test_kullanici_girisi_basarisiz(self):
-        """Kullanıcı yanlış şifre girdiğinde giriş yapamamalıdır."""
         data = {
             "email": self.email,
             "password": "YanlisSifre!"
@@ -46,12 +45,10 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_kullanici_cikisi(self):
-        """Kullanıcı refresh token'ı ile başarılı bir şekilde çıkış yapabilmelidir."""
         # Önce email ve şifre ile giriş yapıp token alalım
         login_response = self.client.post(self.login_url, {"email": self.email, "password": self.password})
 
         refresh_token = login_response.data.get('refresh')
 
-        # Sonra o token ile çıkış (blacklist) isteği atalım
         response = self.client.post(self.logout_url, {"refresh": refresh_token})
         self.assertEqual(response.status_code, status.HTTP_205_RESET_CONTENT)
