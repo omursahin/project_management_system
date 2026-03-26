@@ -44,4 +44,3 @@ class AuthTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    # Çıkış testi fonksiyonunu da tamamen sildik
