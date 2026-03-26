@@ -1,3 +1,8 @@
 from django.db import models
 
-# Create your models here.
+
+class TermLesson(models.Model):
+    id = models.BigAutoField(primary_key=True)
+
+    def __str__(self):
+        return f"TermLesson {self.id}"
