@@ -8,11 +8,9 @@ User = get_user_model()
 
 class AuthTests(APITestCase):
     def setUp(self):
-        # username'i sildik, yerine email ile işlem yapacağız
         self.email = "testuser@example.com"
         self.password = "TestSifresi123!"
 
-        # Sadece modelinde gerçekten var olan alanları gönderiyoruz
         self.user = User.objects.create_user(
             email=self.email,
             password=self.password,
