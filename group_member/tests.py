@@ -1,10 +1,11 @@
 from django.contrib.auth.models import Group
-from django.test import TestCase
+from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-class GroupMemberTest(TestCase):
+
+class GroupMemberTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             email="test@example.com",
@@ -17,18 +18,16 @@ class GroupMemberTest(TestCase):
 
     def test_user_added_to_group(self):
         self.user.groups.add(self.group)
-
-        self.assertTrue(self.user.groups.filter(name="TestGroup").exists())
+        self.assertTrue(self.user.groups.filter(name=self.group.name).exists())
 
     def test_user_not_in_group(self):
-        self.assertFalse(self.user.groups.filter(name="TestGroup").exists())
+        self.assertFalse(self.user.groups.filter(name=self.group.name).exists())
 
-        def test_user_group_membership(self):
-            self.client.force_authenticate(user=self.user)
+    def test_user_group_membership(self):
+        self.client.force_authenticate(user=self.user)
+        self.user.groups.add(self.group)
 
-            self.user.groups.add(self.group)
+        response = self.client.get("/api/user/")
 
-            response = self.client.get("/api/user/")
-
-            self.assertEqual(response.status_code, 200)
-            self.assertIn("TestGroup", str(response.data))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.group.name, str(response.data))
