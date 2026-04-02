@@ -1,7 +1,6 @@
 from django.db import models
 
 class AllowTermLesson(models.Model):
-    # Aynı modele iki Foreign Key verdiğimiz için related_name'leri farklı olmalı.
     term_lesson = models.ForeignKey(
         'term_lesson.TermLesson',
         on_delete=models.CASCADE,
