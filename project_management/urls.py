@@ -59,4 +59,5 @@ urlpatterns = [
 
     path('api/', include('term_lesson.urls')),
     path('api/term-lesson-student/', include('term_lesson_student.urls')),
+    path('api/group-project/', include('group_project.urls')),
 ]
