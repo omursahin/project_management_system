@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -9,6 +9,8 @@ import {
   Text,
   Link,
   Alert,
+  Select,
+  createListCollection,
 } from "@chakra-ui/react";
 import { useDepartmentsQuery } from "../hooks/useDepartments.js";
 import { useRegisterMutation } from "../hooks/useAuth.js";
@@ -254,9 +256,13 @@ function Register() {
                 )}
               </Box>
 
-              <Box>
-                <Box
-                  as="select"
+<Box>
+                <Select.Root
+                  collection={createListCollection({
+                    items: departments,
+                    itemToString: (item) => item.name,
+                    itemToValue: (item) => String(item.id),
+                  })}
                   name="department"
                   value={formData.department}
                   onChange={handleChange}
@@ -269,23 +275,17 @@ function Register() {
                   borderRadius="md"
                   bg="white"
                 >
-                  <option value="">Bölüm Seçiniz (Opsiyonel)</option>
-                  {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
-                      {dept.name}
-                    </option>
-                  ))}
-                </Box>
-                {isDepartmentsLoading && (
-                  <Text color="gray.500" fontSize="sm" mt={1}>
-                    Bölümler yükleniyor...
-                  </Text>
-                )}
-                {hasDepartmentsError && (
-                  <Text color="orange.500" fontSize="sm" mt={1}>
-                    Bölümler şu anda yüklenemedi. Kayıt yine de devam edebilir.
-                  </Text>
-                )}
+                  <Select.Trigger>
+                    <Select.ValueText placeholder="Bölüm Seçiniz (Opsiyonel)" />
+                  </Select.Trigger>
+                  <Select.Content>
+                    {departments.map((dept) => (
+                      <Select.Item key={dept.id} item={String(dept.id)}>
+                        {dept.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
                 {errors.department && (
                   <Text color="red.500" fontSize="sm" mt={1}>
                     {errors.department}
