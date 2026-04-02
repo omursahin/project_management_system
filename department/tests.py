@@ -65,9 +65,8 @@ class DepartmentEklemeSilmeGuncellemeTestleri(TestCase):
         print("✅ ORM: Bölüm (Department) Güncelleme Testi Geçti!")
 
 
-# ==========================================
+
 # 2. API TESTLERİ
-# ==========================================
 @unittest.skip("API endpoint'leri henüz yazılmadı.")
 class DepartmentAPITestleri(APITestCase):
 
