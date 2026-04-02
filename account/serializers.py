@@ -74,3 +74,21 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def validate(self, attrs):
+        self.token = attrs["refresh"]
+        return attrs
+
+    def save(self, **kwargs):
+        try:
+            token = RefreshToken(self.token)
+            token.blacklist()
+        except Exception:
+            raise serializers.ValidationError("Token geçersiz veya zaten logout yapılmış.")
