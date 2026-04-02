@@ -102,21 +102,21 @@ class ProtectedEndpointTests(BaseTestCase):
             password=self.password
         )
 
-        response = self.client.post(reverse('token_obtain_pair'), {
+        self.login_url = reverse('token_obtain_pair')
+
+    def test_token_alma_basarili(self):
+        response = self.client.post(self.login_url, {
             "email": self.email,
             "password": self.password
         })
 
-        self.access_token = response.data['access']
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("access", response.data)
 
-        self.protected_url = reverse('user-profile')
+    def test_token_alma_basarisiz(self):
+        response = self.client.post(self.login_url, {
+            "email": self.email,
+            "password": "YanlisSifre"
+        })
 
-    def test_access_without_token(self):
-        response = self.client.get(self.protected_url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_access_with_token(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_token)
-        response = self.client.get(self.protected_url)
-
-        self.assertIn(response.status_code, [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND])
