@@ -1,24 +1,54 @@
 from django.test import TestCase
 from group.models import Group
 from group_project.models import GroupProject
+from account.models import MyUser
+from term_lesson.models import TermLesson
 
 
 class GroupProjectTest(TestCase):
 
     def setUp(self):
-        self.group1 = Group.objects.create(name="Grup 1", capacity=3)
-        self.group2 = Group.objects.create(name="Grup 2", capacity=3)
+        # Owner user
+        self.user = MyUser.objects.create(
+            email="test@test.com",
+            password="123456"
+        )
 
+        # TermLesson (zorunlu)
+        self.term_lesson = TermLesson.objects.create(
+            name="Yazılım Dersi"
+        )
+
+        # Gruplar
+        self.group1 = Group.objects.create(
+            term_lesson=self.term_lesson,
+            owner=self.user,
+            title="Grup 1",
+            description="Açıklama",
+            max_size=3,
+            status="active"
+        )
+
+        self.group2 = Group.objects.create(
+            term_lesson=self.term_lesson,
+            owner=self.user,
+            title="Grup 2",
+            description="Açıklama",
+            max_size=3,
+            status="active"
+        )
+
+        # Proje
         self.project1 = GroupProject.objects.create(
             group=self.group1,
             title="AI Projesi",
-            description="Yapay zeka projesi",
+            description="Yapay zeka",
             status="pending",
             is_approved=False
         )
 
     def test_same_title_not_allowed_in_same_group(self):
-        project2 = GroupProject.objects.create(
+        GroupProject.objects.create(
             group=self.group1,
             title="AI Projesi",
             description="Aynı isim",
@@ -26,12 +56,12 @@ class GroupProjectTest(TestCase):
             is_approved=False
         )
 
-        duplicates = GroupProject.objects.filter(
+        count = GroupProject.objects.filter(
             group=self.group1,
             title="AI Projesi"
         ).count()
 
-        self.assertEqual(duplicates, 1, "Aynı başlıkta 2 proje olmamalı!")
+        self.assertEqual(count, 1)
 
     def test_same_title_different_group_allowed(self):
         project2 = GroupProject.objects.create(
@@ -47,13 +77,9 @@ class GroupProjectTest(TestCase):
     def test_unapproved_project_cannot_be_completed(self):
         self.project1.status = "completed"
 
-        # business rule simülasyonu
-        if not self.project1.is_approved and self.project1.status == "completed":
-            valid = False
-        else:
-            valid = True
+        valid = not (not self.project1.is_approved and self.project1.status == "completed")
 
-        self.assertFalse(valid, "Onaysız proje tamamlanamaz!")
+        self.assertFalse(valid)
 
     def test_approved_project_can_be_completed(self):
         self.project1.is_approved = True
@@ -64,12 +90,8 @@ class GroupProjectTest(TestCase):
 
     def test_group_projects_listing(self):
         projects = self.group1.group_projects.all()
-
         self.assertEqual(projects.count(), 1)
 
     def test_project_delete(self):
         self.project1.delete()
-
-        projects = self.group1.group_projects.all()
-
-        self.assertEqual(projects.count(), 0)
+        self.assertEqual(self.group1.group_projects.count(), 0)
