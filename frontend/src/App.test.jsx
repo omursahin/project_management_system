@@ -1,13 +1,17 @@
-import { render, screen } from '@testing-library/react';
-import App from './App';
-import { defaultSystem } from '@chakra-ui/react';
-import { ChakraProvider } from '@chakra-ui/react';
+import { render } from "@testing-library/react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+import App from "./App";
+import { createQueryClient } from "./lib/queryClient.js";
 
-test('renders app component without crashing', () => {
+test("renders app component without crashing", () => {
+  const queryClient = createQueryClient();
+
   render(
-    <ChakraProvider value={defaultSystem}>
-      <App />
-    </ChakraProvider>
+    <QueryClientProvider client={queryClient}>
+      <ChakraProvider value={defaultSystem}>
+        <App />
+      </ChakraProvider>
+    </QueryClientProvider>,
   );
-  // Temel render testini başarıyla geçmesi için
 });
