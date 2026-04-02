@@ -136,3 +136,9 @@ htmlcov/
 .coverage
 /media/
 
+# Postman collections and environments
+postman/
+.postman/
+*.resources/
+
+
