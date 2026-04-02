@@ -27,6 +27,17 @@ class Migration(migrations.Migration):
             ],
             options={
                 'constraints': [models.UniqueConstraint(fields=('group', 'user'), name='unique_group_membership_per_user')],
+                ('id', models.BigAutoField(primary_key=True, serialize=False)),
+                ('is_student', models.BooleanField(default=True)),
+                ('is_supervisor', models.BooleanField(default=False)),
+                ('is_accepted', models.BooleanField(default=False)),
+                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='members', to='group.group')),
+                ('member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_memberships', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Group Member',
+                'verbose_name_plural': 'Group Members',
+                'unique_together': {('group', 'member')},
             },
         ),
     ]

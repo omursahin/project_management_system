@@ -1,7 +1,10 @@
 from django.db import models
+import secrets
+import string
 
 
 class Group(models.Model):
+    # Foreign Keys
     id = models.BigAutoField(primary_key=True)
     term_lesson = models.ForeignKey(
         "term_lesson.TermLesson",
@@ -13,11 +16,17 @@ class Group(models.Model):
         on_delete=models.CASCADE,
         related_name="owned_groups",
     )
+
+    # Fields
     title = models.CharField(max_length=255)
     description = models.CharField(max_length=500)
     invitation_code = models.CharField(max_length=12, unique=True, blank=True)
     max_size = models.IntegerField()
     status = models.CharField(max_length=50)
+
+    class Meta:
+        verbose_name = "Group"
+        verbose_name_plural = "Groups"
 
     def _generate_invitation_code(self):
         return self.get_random_string(length=8).upper()
