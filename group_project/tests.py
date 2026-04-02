@@ -8,32 +8,28 @@ from term_lesson.models import TermLesson
 class GroupProjectTest(TestCase):
 
     def setUp(self):
-        # Owner user
-        self.user = MyUser.objects.create(
-            email="test@test.com",
-            password="123456"
-        )
+        # User (minimum create)
+        self.user = MyUser.objects.create()
 
-        # TermLesson (zorunlu)
-        self.term_lesson = TermLesson.objects.create(
-            name="Yazılım Dersi"
-        )
+        # TermLesson (alan bilmiyoruz → boş create)
+        self.term_lesson = TermLesson.objects.create()
 
-        # Gruplar
+        # Grup 1
         self.group1 = Group.objects.create(
             term_lesson=self.term_lesson,
             owner=self.user,
             title="Grup 1",
-            description="Açıklama",
+            description="Test",
             max_size=3,
             status="active"
         )
 
+        # Grup 2
         self.group2 = Group.objects.create(
             term_lesson=self.term_lesson,
             owner=self.user,
             title="Grup 2",
-            description="Açıklama",
+            description="Test",
             max_size=3,
             status="active"
         )
@@ -47,6 +43,7 @@ class GroupProjectTest(TestCase):
             is_approved=False
         )
 
+    # 1️⃣ Aynı başlık aynı grupta olmamalı (simülasyon)
     def test_same_title_not_allowed_in_same_group(self):
         GroupProject.objects.create(
             group=self.group1,
@@ -63,6 +60,7 @@ class GroupProjectTest(TestCase):
 
         self.assertEqual(count, 1)
 
+    # 2️⃣ Farklı grup aynı başlık kullanabilir
     def test_same_title_different_group_allowed(self):
         project2 = GroupProject.objects.create(
             group=self.group2,
@@ -74,6 +72,7 @@ class GroupProjectTest(TestCase):
 
         self.assertEqual(project2.group, self.group2)
 
+    # 3️⃣ Onaysız proje tamamlanamaz
     def test_unapproved_project_cannot_be_completed(self):
         self.project1.status = "completed"
 
@@ -81,6 +80,7 @@ class GroupProjectTest(TestCase):
 
         self.assertFalse(valid)
 
+    # 4️⃣ Onaylı proje tamamlanabilir
     def test_approved_project_can_be_completed(self):
         self.project1.is_approved = True
         self.project1.status = "completed"
@@ -88,10 +88,11 @@ class GroupProjectTest(TestCase):
 
         self.assertEqual(self.project1.status, "completed")
 
+    # 5️⃣ Grup projeleri listelenir
     def test_group_projects_listing(self):
-        projects = self.group1.group_projects.all()
-        self.assertEqual(projects.count(), 1)
+        self.assertEqual(self.group1.group_projects.count(), 1)
 
+    # 6️⃣ Silme testi
     def test_project_delete(self):
         self.project1.delete()
         self.assertEqual(self.group1.group_projects.count(), 0)
