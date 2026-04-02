@@ -1,13 +1,23 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import App from "../App";
+import { createQueryClient } from "../queryClient";
 
 // App kendi Router'ını içerdiği için test-utils kullanmıyoruz
 function renderApp() {
+  const queryClient = createQueryClient({
+    queries: {
+      retry: false,
+    },
+  });
+
   return render(
     <ChakraProvider value={defaultSystem}>
-      <App />
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
     </ChakraProvider>
   );
 }

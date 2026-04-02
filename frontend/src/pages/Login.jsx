@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -19,7 +20,31 @@ function Login() {
     password: "",
   });
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+
+  const loginMutation = useMutation({
+    mutationFn: async (payload) => {
+      const response = await api.post("/account/login/", payload);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/dashboard");
+    },
+    onError: (error) => {
+      if (error.response && error.response.data) {
+        if (error.response.data.error) {
+          setErrors({ general: error.response.data.error });
+          return;
+        }
+
+        setErrors(error.response.data);
+        return;
+      }
+
+      setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
+    },
+  });
 
   const validateForm = () => {
     const newErrors = {};
@@ -44,6 +69,7 @@ function Login() {
       ...prev,
       [name]: value,
     }));
+
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -52,37 +78,18 @@ function Login() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
     setErrors({});
-
-    try {
-      const response = await api.post("/account/login/", formData);
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      navigate("/dashboard");
-    } catch (error) {
-      if (error.response && error.response.data) {
-        if (error.response.data.error) {
-          setErrors({ general: error.response.data.error });
-        } else {
-          setErrors(error.response.data);
-        }
-      } else {
-        setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
-      }
-    } finally {
-      setLoading(false);
-    }
+    loginMutation.mutate(formData);
   };
+
+  const isLoading = loginMutation.isPending;
 
   return (
     <Box
@@ -120,7 +127,7 @@ function Login() {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 {errors.email && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -136,7 +143,7 @@ function Login() {
                   placeholder="Şifre"
                   value={formData.password}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isLoading}
                 />
                 {errors.password && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -145,7 +152,7 @@ function Login() {
                 )}
               </Box>
 
-              <Button type="submit" colorScheme="blue" loading={loading}>
+              <Button type="submit" colorScheme="blue" loading={isLoading}>
                 Giriş Yap
               </Button>
             </VStack>
