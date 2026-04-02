@@ -7,11 +7,11 @@ User = get_user_model()
 class GroupMemberTest(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            email=self.email,
-            password=self.password,
+            email="test@example.com",
+            password="123456",
             first_name="Test",
-            last_name="Kullanicisi",
-            identification_number="12345678901"
+            last_name="User",
+            identification_number="12345678903"
         )
         self.group = Group.objects.create(name="TestGroup")
 
