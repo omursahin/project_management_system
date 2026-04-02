@@ -5,12 +5,10 @@ import Sidebar from "./components/Sidebar.jsx";
 import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-<<<<<<< HEAD
+
 // University list bileşenini import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
-=======
 import Groups from "./pages/Groups.jsx";
->>>>>>> ee9d2d7 (create grops pages)
 
 function App() {
   return (
@@ -46,12 +44,11 @@ function App() {
                         </Box>
                       }
                     />
-<<<<<<< HEAD
                     {/* Üniversite listesi rotasını ekle */}
                     <Route path="/universities" element={<UniversityTable />} />
-=======
+
                     <Route path="/groups" element={<Groups />} />
->>>>>>> ee9d2d7 (create grops pages)
+
                   </Routes>
                 </Box>
               </Flex>
