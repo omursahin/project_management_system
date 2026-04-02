@@ -16,28 +16,24 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='GroupMember',
+            name="GroupMember",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('rejected', 'Rejected')], default='pending', max_length=20)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='group.group')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_memberships', to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("status",
+                 models.CharField(choices=[("pending", "Pending"), ("accepted", "Accepted"), ("rejected", "Rejected")],
+                                  default="pending", max_length=20)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("group", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="memberships",
+                                            to="group.group")),
+                ("user",
+                 models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="group_memberships",
+                                   to=settings.AUTH_USER_MODEL)),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('group', 'user'), name='unique_group_membership_per_user')],
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('is_student', models.BooleanField(default=True)),
-                ('is_supervisor', models.BooleanField(default=False)),
-                ('is_accepted', models.BooleanField(default=False)),
-                ('group', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='members', to='group.group')),
-                ('member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_memberships', to=settings.AUTH_USER_MODEL)),
-            ],
-            options={
-                'verbose_name': 'Group Member',
-                'verbose_name_plural': 'Group Members',
-                'unique_together': {('group', 'member')},
+                "constraints": [
+                    models.UniqueConstraint(fields=("group", "user"), name="unique_group_membership_per_user")
+                ],
             },
         ),
     ]
