@@ -43,6 +43,9 @@ urlpatterns = [
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/account/", include("account.urls")),
     path("api/term/", include("term.urls")),
+    path("api/department/", include("department.urls")),
+    path("api/lesson/", include("lesson.urls")),
+    path("api/university/", include("university.urls")),
     # drf-yasg
     path(
         "swagger.<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
@@ -53,4 +56,6 @@ urlpatterns = [
         name="schema-swagger-ui",
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+
+    path('api/', include('term_lesson.urls')),
 ]
