@@ -12,9 +12,9 @@ import unittest
 User = get_user_model()
 
 
-# ==========================================
+
 # 1. ORM (VERİTABANI) TESTLERİ
-# ==========================================
+
 class LessonEklemeSilmeGuncellemeTestleri(TestCase):
 
     def setUp(self):
@@ -80,9 +80,9 @@ class LessonEklemeSilmeGuncellemeTestleri(TestCase):
         print("✅ ORM: Ders (Lesson) Güncelleme Testi Geçti!")
 
 
-# ==========================================
+
 # 2. API TESTLERİ
-# ==========================================
+
 @unittest.skip("Lesson API henüz tanımlanmadı.")
 class LessonAPITestleri(APITestCase):
 
