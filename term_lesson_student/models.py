@@ -3,7 +3,6 @@ from django.db import models
 
 
 class TermLessonStudent(models.Model):
-    id = models.BigAutoField(primary_key=True)
     student = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
