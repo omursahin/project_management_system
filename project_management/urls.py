@@ -2,7 +2,7 @@
 URL configuration for project_management project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
+    https://docs.djangoproject.com/en/6.0/topics/urlresolvers/
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import include, path, re_path
+from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -32,9 +32,8 @@ schema_view = get_schema_view(
         default_version="v1",
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=[permissions.AllowAny],
 )
-
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -46,6 +45,8 @@ urlpatterns = [
     path("api/department/", include("department.urls")),
     path("api/lesson/", include("lesson.urls")),
     path("api/university/", include("university.urls")),
+    path("api/group/", include("group.urls")),
+    path("api/group-member/", include("group_member.urls")),
     # drf-yasg
     path(
         "swagger.<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"

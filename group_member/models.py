@@ -2,30 +2,42 @@ from django.db import models
 
 
 class GroupMember(models.Model):
-    # Primary Key
-    id = models.BigAutoField(primary_key=True)
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        ACCEPTED = "accepted", "Accepted"
+        REJECTED = "rejected", "Rejected"
 
-    # Foreign Keys
+    STATUS_CHOICES = (
+        (Status.PENDING, "Pending"),
+        (Status.ACCEPTED, "Accepted"),
+        (Status.REJECTED, "Rejected"),
+    )
+
     group = models.ForeignKey(
         "group.Group",
         on_delete=models.CASCADE,
-        related_name="members",
+        related_name="memberships",
     )
-    member = models.ForeignKey(
+    user = models.ForeignKey(
         "account.MyUser",
         on_delete=models.CASCADE,
         related_name="group_memberships",
     )
-
-    # Status Fields
-    is_student = models.BooleanField(default=True)
-    is_supervisor = models.BooleanField(default=False)
-    is_accepted = models.BooleanField(default=False)
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default=Status.PENDING,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("group", "member")
-        verbose_name = "Group Member"
-        verbose_name_plural = "Group Members"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["group", "user"],
+                name="unique_group_membership_per_user",
+            )
+        ]
 
     def __str__(self):
-        return f"{self.member.email} - {self.group.title}"
+        return f"{self.user} - {self.group} ({self.status})"
