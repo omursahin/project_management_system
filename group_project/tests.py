@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.db import models
 from group.models import Group
 from group_project.models import GroupProject
 from account.models import MyUser
@@ -7,23 +8,34 @@ from term.models import Term
 from lesson.models import Lesson
 
 
+def create_instance(model):
+    data = {}
+
+    for field in model._meta.fields:
+        if field.auto_created or field.primary_key:
+            continue
+
+        if not field.null and not field.blank:
+            if isinstance(field, models.CharField):
+                data[field.name] = "test"
+            elif isinstance(field, models.IntegerField):
+                data[field.name] = 1
+            elif isinstance(field, models.BooleanField):
+                data[field.name] = True
+            elif isinstance(field, models.ForeignKey):
+                data[field.name] = create_instance(field.related_model)
+
+    return model.objects.create(**data)
+
+
 class GroupProjectTest(TestCase):
 
     def setUp(self):
-        # User (instructor & owner)
-        self.user = MyUser.objects.create()
+        # TÜM bağımlılıkları otomatik oluştur
+        self.user = create_instance(MyUser)
+        self.term = create_instance(Term)
+        self.lesson = create_instance(Lesson)
 
-        # Term
-        self.term = Term.objects.create(
-            name="2025 Bahar"
-        )
-
-        # Lesson
-        self.lesson = Lesson.objects.create(
-            name="Yazılım"
-        )
-
-        # TermLesson (TÜM zorunlu alanlar verildi)
         self.term_lesson = TermLesson.objects.create(
             term=self.term,
             lesson=self.lesson,
@@ -31,7 +43,6 @@ class GroupProjectTest(TestCase):
             max_group_size=3
         )
 
-        # Gruplar
         self.group1 = Group.objects.create(
             term_lesson=self.term_lesson,
             owner=self.user,
@@ -50,7 +61,6 @@ class GroupProjectTest(TestCase):
             status="active"
         )
 
-        # Proje
         self.project1 = GroupProject.objects.create(
             group=self.group1,
             title="AI Projesi",
@@ -63,7 +73,7 @@ class GroupProjectTest(TestCase):
         GroupProject.objects.create(
             group=self.group1,
             title="AI Projesi",
-            description="Aynı isim",
+            description="Aynı",
             status="pending",
             is_approved=False
         )
@@ -79,7 +89,7 @@ class GroupProjectTest(TestCase):
         project2 = GroupProject.objects.create(
             group=self.group2,
             title="AI Projesi",
-            description="Farklı grup",
+            description="Farklı",
             status="pending",
             is_approved=False
         )
