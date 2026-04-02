@@ -6,7 +6,7 @@ import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 // University list bileşenini import et
-import UniversityTable from "./components/university_list/university_table.jsx";
+import UniversityTable from "./components/university-list/UniversityTable.jsx";
 
 function App() {
   return (
