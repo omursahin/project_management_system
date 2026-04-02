@@ -1,4 +1,5 @@
-  import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -27,21 +28,39 @@ function Register() {
     password: "",
     password2: "",
   });
-  const [departments, setDepartments] = useState([]);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchDepartments = async () => {
-      try {
-        const response = await api.get("/department/");
-        setDepartments(response.data);
-      } catch (error) {
-        console.error("Bölümler yüklenirken hata oluştu:", error);
+  const {
+    data: departments = [],
+    error: departmentsError,
+    isLoading: isDepartmentsLoading,
+  } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const response = await api.get("/department/");
+      return response.data;
+    },
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: async (payload) => {
+      const response = await api.post("/account/register/", payload);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      navigate("/dashboard");
+    },
+    onError: (error) => {
+      if (error.response && error.response.data) {
+        setErrors(error.response.data);
+        return;
       }
-    };
-    fetchDepartments();
-  }, []);
+
+      setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
+    },
+  });
 
   const validateForm = () => {
     const newErrors = {};
@@ -96,6 +115,7 @@ function Register() {
       ...prev,
       [name]: value,
     }));
+
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -104,33 +124,23 @@ function Register() {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
     setErrors({});
-
-    try {
-      const response = await api.post("/account/register/", formData);
-
-      localStorage.setItem("token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-
-      navigate("/dashboard");
-    } catch (error) {
-      if (error.response && error.response.data) {
-        setErrors(error.response.data);
-      } else {
-        setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
-      }
-    } finally {
-      setLoading(false);
-    }
+    registerMutation.mutate(formData);
   };
+
+  const isSubmitting = registerMutation.isPending;
+  const departmentCollection = createListCollection({
+    items: departments,
+    itemToString: (item) => item.name,
+    itemToValue: (item) => String(item.id),
+  });
 
   return (
     <Box
@@ -169,7 +179,7 @@ function Register() {
                   placeholder="Email"
                   value={formData.email}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.email && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -185,7 +195,7 @@ function Register() {
                   placeholder="Ad"
                   value={formData.first_name}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.first_name && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -201,7 +211,7 @@ function Register() {
                   placeholder="Soyad"
                   value={formData.last_name}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.last_name && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -217,7 +227,7 @@ function Register() {
                   placeholder="Kimlik Numarası (11 haneli)"
                   value={formData.identification_number}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                   maxLength={11}
                 />
                 {errors.identification_number && (
@@ -234,7 +244,7 @@ function Register() {
                   placeholder="Telefon Numarası"
                   value={formData.phone_number}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.phone_number && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -250,7 +260,7 @@ function Register() {
                   placeholder="Adres"
                   value={formData.address}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.address && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -259,33 +269,40 @@ function Register() {
                 )}
               </Box>
 
-<Box>
+              <Box>
                 <Select.Root
-                  collection={createListCollection({
-                    items: departments,
-                    itemToString: (item) => item.name,
-                    itemToValue: (item) => String(item.id),
-                  })}
+                  collection={departmentCollection}
                   name="department"
                   value={[formData.department]}
                   onValueChange={(e) =>
                     handleChange({
-                      target: { name: "department", value: e.value[0] },
+                      target: { name: "department", value: e.value[0] ?? "" },
                     })
                   }
-                  disabled={loading}
+                  disabled={isSubmitting || isDepartmentsLoading}
                 >
                   <Select.Trigger>
-                    <Select.ValueText placeholder="Bölüm Seçiniz (Opsiyonel)" />
+                    <Select.ValueText
+                      placeholder={
+                        isDepartmentsLoading
+                          ? "Bölümler yükleniyor..."
+                          : "Bölüm Seçiniz (Opsiyonel)"
+                      }
+                    />
                   </Select.Trigger>
                   <Select.Content>
                     {departments.map((dept) => (
-                      <Select.Item key={dept.id} item={String(dept.id)}>
+                      <Select.Item key={dept.id} item={dept}>
                         {dept.name}
                       </Select.Item>
                     ))}
                   </Select.Content>
                 </Select.Root>
+                {departmentsError && (
+                  <Text color="red.500" fontSize="sm" mt={1}>
+                    Bölümler yüklenemedi. Lütfen sayfayı yenileyin.
+                  </Text>
+                )}
                 {errors.department && (
                   <Text color="red.500" fontSize="sm" mt={1}>
                     {errors.department}
@@ -300,7 +317,7 @@ function Register() {
                   placeholder="Şifre (en az 8 karakter)"
                   value={formData.password}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.password && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -316,7 +333,7 @@ function Register() {
                   placeholder="Şifre Tekrarı"
                   value={formData.password2}
                   onChange={handleChange}
-                  disabled={loading}
+                  disabled={isSubmitting}
                 />
                 {errors.password2 && (
                   <Text color="red.500" fontSize="sm" mt={1}>
@@ -325,7 +342,7 @@ function Register() {
                 )}
               </Box>
 
-              <Button type="submit" colorScheme="blue" loading={loading}>
+              <Button type="submit" colorScheme="blue" loading={isSubmitting}>
                 Kayıt Ol
               </Button>
             </VStack>
