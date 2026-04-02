@@ -4,10 +4,8 @@ import string
 
 
 class Group(models.Model):
-    # Primary Key
-    id = models.BigAutoField(primary_key=True)
-
     # Foreign Keys
+    id = models.BigAutoField(primary_key=True)
     term_lesson = models.ForeignKey(
         "term_lesson.TermLesson",
         on_delete=models.CASCADE,
@@ -35,6 +33,9 @@ class Group(models.Model):
 
     @staticmethod
     def get_random_string(length=8):
+        import secrets
+        import string
+
         alphabet = string.ascii_uppercase + string.digits
         return "".join(secrets.choice(alphabet) for _ in range(length))
 

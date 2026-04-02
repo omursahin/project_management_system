@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+  import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -10,6 +10,7 @@ import {
   Link,
   Alert,
   Select,
+  createListCollection,
 } from "@chakra-ui/react";
 import api from "../services/api.js";
 
@@ -258,9 +259,13 @@ function Register() {
                 )}
               </Box>
 
-              <Box>
+<Box>
                 <Select.Root
-                  collection={departments}
+                  collection={createListCollection({
+                    items: departments,
+                    itemToString: (item) => item.name,
+                    itemToValue: (item) => String(item.id),
+                  })}
                   name="department"
                   value={[formData.department]}
                   onValueChange={(e) =>
@@ -275,7 +280,7 @@ function Register() {
                   </Select.Trigger>
                   <Select.Content>
                     {departments.map((dept) => (
-                      <Select.Item key={dept.id} item={dept.id}>
+                      <Select.Item key={dept.id} item={String(dept.id)}>
                         {dept.name}
                       </Select.Item>
                     ))}
