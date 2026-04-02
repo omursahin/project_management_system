@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import App from "../App";
-import { createQueryClient } from "../lib/queryClient";
+import { createQueryClient } from "../queryClient";
 
 // App kendi Router'ını içerdiği için test-utils kullanmıyoruz
 function renderApp() {
