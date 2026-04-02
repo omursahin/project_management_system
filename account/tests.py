@@ -6,17 +6,25 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-class AuthTests(APITestCase):
+class BaseTestCase(APITestCase):
+    def create_user(self, email, password="Test123!"):
+        return User.objects.create_user(
+            email=email,
+            password=password,
+            first_name="Test",
+            last_name="User",
+            identification_number="12345678901"
+        )
+
+
+class AuthTests(BaseTestCase):
     def setUp(self):
         self.email = "testuser@example.com"
         self.password = "TestSifresi123!"
 
-        self.user = User.objects.create_user(
+        self.user = self.create_user(
             email=self.email,
-            password=self.password,
-            first_name="Test",
-            last_name="Kullanici",
-            identification_number="12345678901"
+            password=self.password
         )
 
         self.login_url = reverse('token_obtain_pair')
@@ -47,7 +55,7 @@ class AuthTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class RegisterTests(APITestCase):
+class RegisterTests(BaseTestCase):
     def setUp(self):
         self.url = reverse('register')
 
@@ -77,22 +85,19 @@ class RegisterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_register_existing_user(self):
-        User.objects.create_user(
-            email="yeni@example.com",
-            password="Test123!"
-        )
+        self.create_user(email="yeni@example.com")
 
         response = self.client.post(self.url, self.valid_data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
-class ProtectedEndpointTests(APITestCase):
+class ProtectedEndpointTests(BaseTestCase):
     def setUp(self):
         self.email = "secure@example.com"
         self.password = "Secure123!"
 
-        self.user = User.objects.create_user(
+        self.user = self.create_user(
             email=self.email,
             password=self.password
         )
