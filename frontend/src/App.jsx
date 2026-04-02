@@ -5,16 +5,16 @@ import Sidebar from "./components/Sidebar.jsx";
 import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+// University list bileşenini import et
+import UniversityTable from "./components/university-list/UniversityTable.jsx";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Auth routes without layout */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Main app routes with layout */}
         <Route
           path="/*"
           element={
@@ -42,6 +42,8 @@ function App() {
                         </Box>
                       }
                     />
+                    {/* Üniversite listesi rotasını ekle */}
+                    <Route path="/universities" element={<UniversityTable />} />
                   </Routes>
                 </Box>
               </Flex>
