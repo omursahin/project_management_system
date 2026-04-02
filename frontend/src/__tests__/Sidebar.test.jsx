@@ -9,6 +9,21 @@ describe("Sidebar", () => {
     expect(screen.getByText("MENÜ")).toBeInTheDocument();
   });
 
+  it("Ana Sayfa linkini gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("Ana Sayfa")).toBeInTheDocument();
+  });
+
+  it("Panel linkini gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("Panel")).toBeInTheDocument();
+  });
+
+  it("Gruplarım linkini gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("Gruplarım")).toBeInTheDocument();
+  });
+
   it("Profilim linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Profilim")).toBeInTheDocument();
@@ -17,11 +32,6 @@ describe("Sidebar", () => {
   it("Ayarlar linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Ayarlar")).toBeInTheDocument();
-  });
-
-  it("Mesajlar linkini gösterir", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Mesajlar")).toBeInTheDocument();
   });
 
   it("aside elementi olarak render eder", () => {
