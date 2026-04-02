@@ -27,5 +27,9 @@ class Migration(migrations.Migration):
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='owned_groups', to=settings.AUTH_USER_MODEL)),
                 ('term_lesson', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='groups', to='term_lesson.termlesson')),
             ],
+            options={
+                'verbose_name': 'Group',
+                'verbose_name_plural': 'Groups',
+            },
         ),
     ]
