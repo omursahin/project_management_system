@@ -6,6 +6,7 @@ from group_project.models import GroupProject
 from account.models import MyUser
 from term_lesson.models import TermLesson
 from term.models import Term
+from django.db import IntegrityError
 from lesson.models import Lesson
 
 
@@ -18,10 +19,8 @@ def create_instance(model):
 
         if not field.null and not field.blank:
             if isinstance(field, models.CharField):
-                # Benzersizlik kuralına takılmamak için rastgele string
                 data[field.name] = f"test_{uuid.uuid4().hex[:8]}"
             elif isinstance(field, models.IntegerField):
-                # Benzersiz sayı üretimi
                 data[field.name] = uuid.uuid4().int % 1000000
             elif isinstance(field, models.BooleanField):
                 data[field.name] = True
@@ -34,7 +33,6 @@ def create_instance(model):
 class GroupProjectTest(TestCase):
 
     def setUp(self):
-        # TÜM bağımlılıkları otomatik oluştur
         self.user = create_instance(MyUser)
         self.term = create_instance(Term)
         self.lesson = create_instance(Lesson)
@@ -73,10 +71,8 @@ class GroupProjectTest(TestCase):
         )
 
     def test_same_title_not_allowed_in_same_group(self):
-        # Not: Eğer veritabanında "unique_together" veya benzersizlik kuralı varsa
-        # buradaki create() işlemi IntegrityError fırlatabilir.
-        # Öyle bir durum olursa bu testi "with self.assertRaises(IntegrityError):" şeklinde güncellemen gerekebilir.
-        try:
+
+        with self.assertRaises(IntegrityError):
             GroupProject.objects.create(
                 group=self.group1,
                 title="AI Projesi",
@@ -84,15 +80,7 @@ class GroupProjectTest(TestCase):
                 status="pending",
                 is_approved=False
             )
-        except Exception:
-            pass
 
-        count = GroupProject.objects.filter(
-            group=self.group1,
-            title="AI Projesi"
-        ).count()
-
-        self.assertEqual(count, 1)
 
     def test_same_title_different_group_allowed(self):
         project2 = GroupProject.objects.create(
