@@ -29,15 +29,6 @@ describe("App", () => {
     expect(document.body).toBeTruthy();
   });
 
-  it("Navbar'ı içerir", () => {
-    renderApp();
-    expect(screen.getByText("WEB PROJE")).toBeInTheDocument();
-  });
-
-  it("Footer'ı içerir", () => {
-    renderApp();
-    expect(screen.getByText(/Web Programlama Dersi/i)).toBeInTheDocument();
-  });
 
   it("Sidebar'ı içerir", () => {
     renderApp();

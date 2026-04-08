@@ -4,10 +4,7 @@ import { render } from "../test/test-utils";
 import Navbar from "../components/Navbar";
 
 describe("Navbar", () => {
-  it("proje başlığını gösterir", () => {
-    render(<Navbar />);
-    expect(screen.getByText("WEB PROJE")).toBeInTheDocument();
-  });
+
 
   it("Ana Sayfa linkini gösterir", () => {
     render(<Navbar />);

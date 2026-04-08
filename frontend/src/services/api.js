@@ -36,3 +36,5 @@ export default api;
 // ── Simülasyon: backend hazır olunca aşağıdaki 2 satırı sil ──
 import { installMockGroupApi } from "./mockGroupApi.js";
 installMockGroupApi(api);
+import { installMockProjectApi } from "./mockProjectApi.js";
+installMockProjectApi(api);

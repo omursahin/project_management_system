@@ -9,6 +9,8 @@ import Register from "./pages/Register.jsx";
 // University list bileşenini import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
+import Projects from "./pages/Projects.jsx";
+import ProjectDetail from "./pages/ProjectDetail.jsx";
 
 function App() {
   return (
@@ -30,7 +32,7 @@ function App() {
                       path="/"
                       element={
                         <Box>
-                          <h1>Hoş Geldin! Projenin Çakraları açılıyor... 🚀</h1>
+                          <h1>Hoş Geldin!</h1>
                           <p>Burada projelerini yönetmeye başlayabilirsin.</p>
                         </Box>
                       }
@@ -48,6 +50,8 @@ function App() {
                     <Route path="/universities" element={<UniversityTable />} />
 
                     <Route path="/groups" element={<Groups />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/projects/:id" element={<ProjectDetail />} />
 
                   </Routes>
                 </Box>

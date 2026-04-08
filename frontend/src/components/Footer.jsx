@@ -5,7 +5,7 @@ const Footer = () => {
     <Box as="footer" py={5} bg="gray.800" color="white" mt="auto">
       <Center>
         <Text fontSize="sm">
-          &copy; {new Date().getFullYear()} Web Programlama Dersi | Tüm Hakları Saklıdır.
+          &copy; {new Date().getFullYear()} Erciyes Üniversitesi Bilgisyar Mühendisliiği Proje Yönetim Sistemi | Tüm Hakları Saklıdır.
         </Text>
       </Center>
     </Box>

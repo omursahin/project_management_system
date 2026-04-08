@@ -17,7 +17,7 @@ const Navbar = () => {
     >
       <Box>
         <Text fontSize="lg" fontWeight="bold" letterSpacing="wider">
-          WEB PROJE
+          Proje Yönetim Sistemi
         </Text>
       </Box>
 

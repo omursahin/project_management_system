@@ -118,7 +118,7 @@ function Login() {
             </Alert.Root>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <VStack gap={4} align="stretch">
               <Box>
                 <Input

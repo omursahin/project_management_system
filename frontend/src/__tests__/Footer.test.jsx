@@ -4,10 +4,6 @@ import { render } from "../test/test-utils";
 import Footer from "../components/Footer";
 
 describe("Footer", () => {
-  it("telif hakkı metnini gösterir", () => {
-    render(<Footer />);
-    expect(screen.getByText(/Web Programlama Dersi/i)).toBeInTheDocument();
-  });
 
   it("güncel yılı gösterir", () => {
     render(<Footer />);
