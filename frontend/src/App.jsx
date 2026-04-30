@@ -5,8 +5,10 @@ import Sidebar from "./components/Sidebar.jsx";
 import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+
 // University list bileşenini import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
+import Groups from "./pages/Groups.jsx";
 
 function App() {
   return (
@@ -44,6 +46,9 @@ function App() {
                     />
                     {/* Üniversite listesi rotasını ekle */}
                     <Route path="/universities" element={<UniversityTable />} />
+
+                    <Route path="/groups" element={<Groups />} />
+
                   </Routes>
                 </Box>
               </Flex>
