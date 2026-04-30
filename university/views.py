@@ -1,8 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, BasePermission
+from rest_framework.response import Response
 
 from .models import University
-from .serializers import UniversitySerializer
+from .serializers import UniversitySerializer, UniversitySetActiveTermSerializer
 
 
 class IsAdminUser(BasePermission):
@@ -28,3 +30,16 @@ class UniversityViewSet(viewsets.ModelViewSet):
             permission_classes = [IsAdminUser]
         return [permission() for permission in permission_classes]
 
+    @action(detail=True, methods=["post"], url_path="set-active-term")
+    def set_active_term(self, request, pk=None):
+        university = self.get_object()
+        serializer = UniversitySetActiveTermSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        university.active_term = serializer.validated_data["active_term"]
+        university.save(update_fields=["active_term"])
+
+        return Response(
+            UniversitySerializer(university).data,
+            status=status.HTTP_200_OK,
+        )
