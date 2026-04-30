@@ -1,7 +1,21 @@
 import axios from 'axios';
 
+// API URL oncelik sirasi:
+// 1. Runtime config (public/config.js'deki window.APP_CONFIG.API_URL) - build sonrasi degistirilebilir
+// 2. Build-time env (.env'deki VITE_API_URL) - npm run build oncesi belirlenir
+// 3. window.location.origin - frontend ile backend ayni sunucudaysa
+function resolveApiUrl() {
+  if (typeof window !== 'undefined' && window.APP_CONFIG?.API_URL) {
+    return window.APP_CONFIG.API_URL;
+  }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || window.location.origin,
+  baseURL: resolveApiUrl(),
 });
 
 // Her istekte localStorage'dan JWT token'i header'a ekle
