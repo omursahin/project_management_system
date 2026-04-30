@@ -1,11 +1,12 @@
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import LoginSerializer, RegisterSerializer, LogoutSerializer
+# Bütün serializer'larımızı tek satırda temizce çağırdık
+from .serializers import LoginSerializer, RegisterSerializer, LogoutSerializer, ProfileSerializer
 
 
 class RegisterView(APIView):
@@ -69,11 +70,6 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
-from rest_framework.permissions import IsAuthenticated
-
-
-
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -88,3 +84,10 @@ class LogoutView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ProfileAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
