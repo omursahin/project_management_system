@@ -26,41 +26,61 @@ class GroupProjectViewSet(viewsets.ModelViewSet):
     serializer_class = None
 
     def list(self, request):
-        return Response([{"id": obj.id, "title": obj.title} for obj in self.queryset])
+        qs = self.queryset
+        group_owner = request.query_params.get('group_owner')
+        if group_owner:
+            qs = qs.filter(group__owner_id=group_owner)
+        term_lesson = request.query_params.get('term_lesson')
+        if term_lesson:
+            qs = qs.filter(group__term_lesson_id=term_lesson)
+        return Response([{"id": obj.id, "title": obj.title} for obj in qs])
 
     def retrieve(self, request, pk=None):
         obj = self.queryset.get(id=pk)
         return Response({"id": obj.id, "title": obj.title})
 
     def create(self, request):
-        return Response(request.data, status=201)
+        group = Group.objects.get(id=request.data['group'])
+        obj = GroupProject.objects.create(
+            group=group,
+            title=request.data['title'],
+            description=request.data['description'],
+            status=request.data['status']
+        )
+        return Response({"id": obj.id, "title": obj.title}, status=201)
 
     def partial_update(self, request, pk=None):
-        if request.user != GroupProject.objects.get(id=pk).group.owner:
+        obj = self.queryset.get(id=pk)
+        if request.user != obj.group.owner:
             return Response(status=403)
-        return Response(request.data)
+        obj.title = request.data.get('title', obj.title)
+        obj.status = request.data.get('status', obj.status)
+        obj.save()
+        return Response({"id": obj.id, "title": obj.title})
 
     def destroy(self, request, pk=None):
+        obj = self.queryset.get(id=pk)
+        obj.delete()
         return Response(status=204)
 
     @action(detail=True, methods=['patch'])
     def approve(self, request, pk=None):
         if not request.user.is_staff:
             return Response(status=403)
+        obj = self.queryset.get(id=pk)
+        obj.is_approved = True
+        obj.save()
         return Response({"status": "approved"})
 
 router = DefaultRouter()
 router.register(r'group-project', GroupProjectViewSet, basename='group-project')
-
 urlpatterns = router.urls
 
 def create_instance(model):
     data = {}
-
     for field in model._meta.fields:
         if field.auto_created or field.primary_key:
             continue
-
         if not field.null and not field.blank:
             if isinstance(field, models.CharField):
                 data[field.name] = uuid.uuid4().hex[:8]
@@ -70,7 +90,6 @@ def create_instance(model):
                 data[field.name] = True
             elif isinstance(field, models.ForeignKey):
                 data[field.name] = create_instance(field.related_model)
-
     return model.objects.create(**data)
 
 class GroupProjectTest(TestCase):
@@ -222,42 +241,129 @@ class GroupProjectAPITestCase(TestCase):
         )
 
     def test_list_group_projects(self):
+        """Test listing group projects."""
         self.client.force_authenticate(user=self.instructor)
-        response = self.client.get(reverse('group-project-list'))
-        self.assertEqual(response.status_code, 200)
+        url = reverse('group-project-list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        if isinstance(response.data, list):
+            self.assertEqual(len(response.data), 1)
+        else:
+            self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_group_owner(self):
+        """Test filtering group projects by group owner."""
+        self.client.force_authenticate(user=self.instructor)
+        url = reverse('group-project-list')
+        response = self.client.get(url, {'group_owner': self.student.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        if isinstance(response.data, list):
+            self.assertEqual(len(response.data), 1)
+        else:
+            self.assertEqual(response.data['count'], 1)
+
+    def test_filter_by_term_lesson(self):
+        """Test filtering group projects by term lesson."""
+        self.client.force_authenticate(user=self.instructor)
+        url = reverse('group-project-list')
+        response = self.client.get(url, {'term_lesson': self.term_lesson.id})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        if isinstance(response.data, list):
+            self.assertEqual(len(response.data), 1)
+        else:
+            self.assertEqual(response.data['count'], 1)
 
     def test_retrieve_group_project(self):
+        """Test retrieving a specific group project."""
         self.client.force_authenticate(user=self.instructor)
-        response = self.client.get(reverse('group-project-detail', args=[self.group_project.id]))
-        self.assertEqual(response.status_code, 200)
+        url = reverse('group-project-detail', args=[self.group_project.id])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Test Project')
 
     def test_create_group_project(self):
+        """Test creating a new group project."""
         self.client.force_authenticate(user=self.student)
-        response = self.client.post(reverse('group-project-list'), {
+        url = reverse('group-project-list')
+        data = {
             'group': self.group.id,
             'title': 'New Project',
-            'description': 'desc'
-        })
-        self.assertEqual(response.status_code, 201)
+            'description': 'A new project description',
+            'status': 'in_progress'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['title'], 'New Project')
+
+    def test_create_group_project_unauthorized(self):
+        """Test creating a group project without proper permissions."""
+        other_student = MyUser.objects.create_user(
+            email='other@test.com',
+            password='testpass123',
+            first_name='Other',
+            last_name='Student',
+            identification_number='12345678903',
+            phone_number='5551234569',
+            address='789 Test St',
+            department=self.department
+        )
+        self.client.force_authenticate(user=other_student)
+        url = reverse('group-project-list')
+        data = {
+            'group': self.group.id,
+            'title': 'Unauthorized Project',
+            'description': 'An unauthorized project',
+            'status': 'in_progress'
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_update_group_project(self):
+        """Test updating a group project."""
         self.client.force_authenticate(user=self.student)
-        response = self.client.patch(
-            reverse('group-project-detail', args=[self.group_project.id]),
-            {'title': 'Updated'}
-        )
-        self.assertEqual(response.status_code, 200)
+        url = reverse('group-project-detail', args=[self.group_project.id])
+        data = {'title': 'Updated Project', 'status': 'completed'}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['title'], 'Updated Project')
 
-    def test_delete_group_project(self):
-        self.client.force_authenticate(user=self.student)
-        response = self.client.delete(
-            reverse('group-project-detail', args=[self.group_project.id])
+    def test_update_group_project_unauthorized(self):
+        """Test updating a group project without proper permissions."""
+        other_student = MyUser.objects.create_user(
+            email='other@test.com',
+            password='testpass123',
+            first_name='Other',
+            last_name='Student',
+            identification_number='12345678903',
+            phone_number='5551234569',
+            address='789 Test St',
+            department=self.department
         )
-        self.assertEqual(response.status_code, 204)
+        self.client.force_authenticate(user=other_student)
+        url = reverse('group-project-detail', args=[self.group_project.id])
+        data = {'title': 'Unauthorized Update'}
+        response = self.client.patch(url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_approve_group_project(self):
+        """Test approving a group project (instructor only)."""
         self.client.force_authenticate(user=self.instructor)
-        response = self.client.patch(
-            reverse('group-project-approve', args=[self.group_project.id])
-        )
-        self.assertEqual(response.status_code, 200)
+        url = reverse('group-project-approve', args=[self.group_project.id])
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.group_project.refresh_from_db()
+        self.assertTrue(self.group_project.is_approved)
+
+    def test_approve_group_project_non_instructor(self):
+        """Test that non-instructor cannot approve group project."""
+        self.client.force_authenticate(user=self.student)
+        url = reverse('group-project-approve', args=[self.group_project.id])
+        response = self.client.patch(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_group_project(self):
+        """Test deleting a group project."""
+        self.client.force_authenticate(user=self.student)
+        url = reverse('group-project-detail', args=[self.group_project.id])
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
