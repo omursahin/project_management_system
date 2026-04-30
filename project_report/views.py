@@ -132,3 +132,4 @@ class ProjectReportViewSet(viewsets.ModelViewSet):
         """
         kwargs['partial'] = True
         return self.update(request, *args, **kwargs)
+
