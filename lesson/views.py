@@ -1,20 +1,9 @@
 from rest_framework import permissions, viewsets
 
+from project_management.permissions import IsInstructor, IsOwner
+
 from .models import Lesson
 from .serializers import LessonSerializer
-
-
-class IsOwnerOrAdmin(permissions.BasePermission):
-    """
-    Permission to only allow owners or admins to edit an object.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            obj.owner == request.user
-            or request.user.is_staff
-            or request.user.is_superuser
-        )
 
 
 class LessonViewSet(viewsets.ModelViewSet):
@@ -35,6 +24,8 @@ class LessonViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_permissions(self):
-        if self.action in ["destroy", "update", "partial_update"]:
-            return [IsOwnerOrAdmin()]
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [IsOwner()]
+        if self.action == "create":
+            return [IsInstructor()]
         return [permissions.IsAuthenticated()]

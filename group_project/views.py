@@ -1,9 +1,9 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import GroupProject
 from .serializers import GroupProjectSerializer, GroupProjectApproveSerializer, GroupProjectCreateSerializer
-from .permissions import IsGroupOwnerOrInstructor, IsGroupOwnerOrReadOnly, IsInstructor
+from project_management.permissions import IsGroupMember, IsGroupOwner, IsInstructor
 
 
 class GroupProjectViewSet(viewsets.ModelViewSet):
@@ -20,8 +20,8 @@ class GroupProjectViewSet(viewsets.ModelViewSet):
     """
     
     queryset = GroupProject.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-    
+    permission_classes = [IsGroupMember]
+
     def get_serializer_class(self):
         """Return appropriate serializer based on action."""
         if self.action == 'create':
@@ -53,12 +53,12 @@ class GroupProjectViewSet(viewsets.ModelViewSet):
     
     def get_permissions(self):
         """Override permission classes based on action."""
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsGroupOwnerOrInstructor]
-        elif self.action == 'approve':
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            self.permission_classes = [IsGroupOwner]
+        elif self.action == "approve":
             self.permission_classes = [IsInstructor]
         else:
-            self.permission_classes = [permissions.IsAuthenticated]
+            self.permission_classes = [IsGroupMember]
         return super().get_permissions()
     
     def perform_create(self, serializer):

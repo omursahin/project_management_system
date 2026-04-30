@@ -1,5 +1,7 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+
+from project_management.permissions import IsAdmin
 
 from .models import Department
 from .serializers import DepartmentSerializer
@@ -22,5 +24,5 @@ class DepartmentViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         write_actions = {"create", "update", "partial_update", "destroy"}
         if self.action in write_actions:
-            return [IsAdminUser()]
+            return [IsAdmin()]
         return [IsAuthenticated()]

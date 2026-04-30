@@ -9,7 +9,8 @@ from .serializers import (
     TermLessonStudentApproveSerializer,
     TermLessonStudentCreateSerializer,
 )
-from .permissions import IsTermLessonInstructor, IsTermLessonStudentOrInstructor
+from .permissions import IsTermLessonStudentOrInstructor
+from project_management.permissions import IsInstructor, IsStudent
 from term_lesson.models import TermLesson
 
 
@@ -79,10 +80,14 @@ class TermLessonStudentViewSet(viewsets.ModelViewSet):
         - For 'approve' action, only the instructor can approve
         - For 'update' and 'partial_update' actions (grade updates), only the instructor can update
         """
-        if self.action in ['update', 'partial_update']:
-            self.permission_classes = [IsAuthenticated, IsTermLessonInstructor]
-        elif self.action == 'approve':
-            self.permission_classes = [IsAuthenticated, IsTermLessonInstructor]
+        if self.action in ["update", "partial_update", "approve", "destroy"]:
+            self.permission_classes = [IsInstructor]
+        elif self.action == "create":
+            self.permission_classes = [IsStudent]
+        elif self.action in ["retrieve"]:
+            self.permission_classes = [IsTermLessonStudentOrInstructor]
+        elif self.action == "list":
+            self.permission_classes = [IsInstructor]
         else:
             self.permission_classes = [IsAuthenticated]
         

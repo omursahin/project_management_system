@@ -1,5 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
+
+from project_management.permissions import IsInstructor
 from .models import TermLesson
 from .serializers import TermLessonViewSetSerializer
 
@@ -11,6 +13,12 @@ class TermLessonViewSet(viewsets.ModelViewSet):
 
     # Sisteme giriş yapmamış kimse bu uç noktalara erişemesin
     permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        write_actions = {"create", "update", "partial_update", "destroy"}
+        if self.action in write_actions:
+            return [IsInstructor()]
+        return [IsAuthenticated()]
 
     # GET /api/term-lesson/ isteğinde filtreleme yapmak için bu metodu özelleştiriyoruz
     def get_queryset(self):

@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from group_member.serializers import GroupJoinSerializer
 from .models import Group
 from .serializers import GroupSerializer
-from .permissions import IsOwnerOrAdmin
+from project_management.permissions import IsGroupOwner, IsStudent
 
 
 class GroupJoinView(APIView):
@@ -37,7 +37,14 @@ class GroupViewSet(viewsets.ModelViewSet):
     """
     queryset = Group.objects.all().order_by('-id')
     serializer_class = GroupSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    permission_classes = [IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [IsGroupOwner()]
+        if self.action == "create":
+            return [IsStudent()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):
         """
