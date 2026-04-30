@@ -3,11 +3,9 @@ from .models import ProjectReport
 
 
 class ProjectReportSerializer(serializers.ModelSerializer):
-    """
-    Serializer for ProjectReport model with file upload support.
-    """
-    project_name = serializers.CharField(source='project.name', read_only=True)
-    report_title = serializers.CharField(source='report.title', read_only=True)
+    """Serializer for ProjectReport model with file upload support."""
+    project_name = serializers.CharField(source='project.title', read_only=True)
+    report_title = serializers.CharField(source='report.report_name', read_only=True)
     file_url = serializers.SerializerMethodField()
     plagiarism_file_url = serializers.SerializerMethodField()
 
@@ -27,10 +25,8 @@ class ProjectReportSerializer(serializers.ModelSerializer):
             'is_submitted',
             'plagiarism_rate',
             'version',
-            'created_at',
-            'updated_at',
         ]
-        read_only_fields = ['id', 'version', 'is_submitted', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'version', 'is_submitted']
 
     def get_file_url(self, obj):
         """Return the full URL for the file."""

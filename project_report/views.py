@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 
 from .models import ProjectReport
-from .serializers import ProjectReport
+from .serializers import ProjectReportSerializer
 
 
 class ProjectReportViewSet(viewsets.ModelViewSet):
@@ -28,8 +28,8 @@ class ProjectReportViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         """Return the appropriate serializer based on the action."""
         if self.action in ['create', 'update', 'partial_update']:
-            return ProjectReport
-        return ProjectReport
+            return ProjectReportSerializer
+        return ProjectReportSerializer
 
     def get_serializer_context(self):
         """Include request in serializer context for building absolute URLs."""
