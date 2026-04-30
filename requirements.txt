@@ -22,3 +22,5 @@ swagger-spec-validator==3.0.4
 typing-extensions==4.15.0
 pytest
 pytest-django
+psycopg2-binary
+python-dotenv
