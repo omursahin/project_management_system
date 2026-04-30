@@ -63,7 +63,7 @@ def create_instance(model):
 
         if not field.null and not field.blank:
             if isinstance(field, models.CharField):
-                data[field.name] = f"test_{uuid.uuid4().hex[:8]}"
+                data[field.name] = uuid.uuid4().hex[:8]
             elif isinstance(field, models.IntegerField):
                 data[field.name] = uuid.uuid4().int % 1000000
             elif isinstance(field, models.BooleanField):
