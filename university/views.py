@@ -26,7 +26,9 @@ class UniversityViewSet(viewsets.ModelViewSet):
         university.save(update_fields=["active_term"])
         
         return Response(
-            {"status": "Dönem başarıyla güncellendi", "active_term": university.active_term.id},
+            {
+                "status": "Dönem başarıyla güncellendi", 
+                "active_term": university.active_term.id
+            },
             status=status.HTTP_200_OK
         )
-

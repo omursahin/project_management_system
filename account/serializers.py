@@ -92,3 +92,18 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
         except Exception:
             raise serializers.ValidationError("Token geçersiz veya zaten logout yapılmış.")
+
+class ProfileSerializer(serializers.ModelSerializer):
+            class Meta:
+                model = MyUser
+                fields = [
+                    'id',
+                    'email',
+                    'first_name',
+                    'last_name',
+                    'identification_number',
+                    'phone_number',
+                    'address',
+                    'department'
+                ]
+                read_only_fields = ['id', 'email', 'identification_number', 'department']

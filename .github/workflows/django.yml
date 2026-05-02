@@ -6,6 +6,31 @@ jobs:
   backend-test:
     name: Run Pytest
     runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: project_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: project_db
+      SECRET_KEY: "test-secret-key-for-ci"
+      DEBUG: True
+
     steps:
       - name: Kodu Çek (Checkout)
         uses: actions/checkout@v4
