@@ -5,6 +5,7 @@ const menuItems = [
   { label: "Ana Sayfa", href: "/" },
   { label: "Panel", href: "/dashboard" },
   { label: "Gruplarım", href: "/groups" },
+  { label: "Fakülte Yönetimi", href: "/faculties" },
   { label: "Profilim", href: "/profile" },
   { label: "Ayarlar", href: "/settings" },
 ];

@@ -10,12 +10,15 @@ import Register from "./pages/Register.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
 
+import FacultyManagement from './pages/FacultyManagement';
+
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/faculties" element={<FacultyManagement />} />
 
         <Route
           path="/*"
