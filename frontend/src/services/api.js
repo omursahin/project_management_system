@@ -1,130 +1,114 @@
-/**
- * HTTP istemcisi.
- *
- * Axios bagimliligi kaldirildi; bu modul fetch uzerine kurulu, axios benzeri
- * bir API saglar (get/post/put/patch/delete + { data, status } cevap formati,
- * error.response = { status, data } hata formati). Boylece bu dosyayi
- * kullanan diger modullerin (services/groupApi.js, services/resources.js,
- * services/auth.js, hooks/useApiResource.js, ...) imza degisimine ugramasi
- * gerekmedi.
- *
- * Component'ler bu modulu DOGRUDAN kullanmamalidir; sadece react-query
- * hook'lari (useQuery / useMutation) altindaki transport olarak hizmet eder.
- */
+import axios from 'axios';
 
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
-class ApiError extends Error {
-  constructor(message, status, data) {
-    super(message);
-    this.name = "ApiError";
-    // axios uyumlulugu: error.response.status / error.response.data pattern'i
-    this.response = { status, data };
+// API URL oncelik sirasi:
+// 1. Runtime config (public/config.js'deki window.APP_CONFIG.API_URL) - build sonrasi degistirilebilir
+// 2. Build-time env (.env'deki VITE_API_URL) - npm run build oncesi belirlenir
+// 3. window.location.origin - frontend ile backend ayni sunucudaysa
+function resolveApiUrl() {
+  if (typeof window !== 'undefined' && window.APP_CONFIG?.API_URL) {
+    return window.APP_CONFIG.API_URL;
   }
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  return typeof window !== 'undefined' ? window.location.origin : '';
 }
 
-/* ---------- Auth header ---------- */
-function getAuthHeaders() {
-  const tokens = localStorage.getItem("tokens");
-  if (!tokens) return {};
-  try {
-    const { access } = JSON.parse(tokens);
-    return access ? { Authorization: `Bearer ${access}` } : {};
-  } catch {
-    return {};
-  }
-}
+const api = axios.create({
+  baseURL: resolveApiUrl(),
+});
 
-/* ---------- 401 sonrasi redirect ---------- */
-function handleUnauthorized() {
+// Her istekte localStorage'dan JWT token'i header'a ekle
+api.interceptors.request.use((config) => {
+  const tokens = JSON.parse(localStorage.getItem("tokens") || "null");
+  if (tokens?.access) {
+    config.headers.Authorization = `Bearer ${tokens.access}`;
+  }
+  return config;
+});
+
+// 401 gelirse refresh token ile yenile, yine başarısızsa login'e yönlendir
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    // 401 ve henüz retry yapılmadıysa refresh dene
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      // Login/register isteklerinde refresh deneme
+      if (originalRequest.url?.includes('/account/login') ||
+          originalRequest.url?.includes('/account/register')) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const tokens = JSON.parse(localStorage.getItem("tokens") || "null");
+      if (!tokens?.refresh) {
+        isRefreshing = false;
+        forceLogout();
+        return Promise.reject(error);
+      }
+
+      try {
+        const { data } = await axios.post(
+          `${api.defaults.baseURL}/api/v1/token/refresh/`,
+          { refresh: tokens.refresh }
+        );
+
+        const newTokens = { ...tokens, access: data.access };
+        // Refresh rotate edildiyse yeni refresh'i de kaydet
+        if (data.refresh) {
+          newTokens.refresh = data.refresh;
+        }
+        localStorage.setItem("tokens", JSON.stringify(newTokens));
+
+        processQueue(null, data.access);
+        originalRequest.headers.Authorization = `Bearer ${data.access}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        forceLogout();
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+function forceLogout() {
   localStorage.removeItem("tokens");
   localStorage.removeItem("user");
-  if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+  if (window.location.pathname !== "/login") {
     window.location.href = "/login";
   }
 }
 
-/* ---------- URL + query params ---------- */
-function buildUrl(path, params) {
-  let url = `${BASE_URL}${path}`;
-  if (params && typeof params === "object") {
-    const cleaned = Object.entries(params).filter(
-      ([, v]) => v !== undefined && v !== null && v !== ""
-    );
-    if (cleaned.length) {
-      const search = new URLSearchParams(cleaned).toString();
-      url += `?${search}`;
-    }
-  }
-  return url;
-}
-
-/* ---------- Response body parser ---------- */
-async function parseBody(response) {
-  if (response.status === 204) return null;
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("application/json")) {
-    try {
-      return await response.json();
-    } catch {
-      return null;
-    }
-  }
-  try {
-    return await response.text();
-  } catch {
-    return null;
-  }
-}
-
-/* ---------- Cekirdek istek fonksiyonu ---------- */
-async function request(method, path, { params, data, headers = {} } = {}) {
-  const url = buildUrl(path, params);
-
-  const init = {
-    method,
-    headers: {
-      Accept: "application/json",
-      ...getAuthHeaders(),
-      ...headers,
-    },
-  };
-
-  if (data !== undefined && data !== null) {
-    if (data instanceof FormData) {
-      // FormData'nin Content-Type'i (multipart boundary ile) tarayici tarafindan otomatik set edilir
-      init.body = data;
-    } else {
-      init.headers["Content-Type"] = "application/json";
-      init.body = JSON.stringify(data);
-    }
-  }
-
-  const response = await fetch(url, init);
-  const body = await parseBody(response);
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw new ApiError(
-      `Request failed with status ${response.status}`,
-      response.status,
-      body
-    );
-  }
-
-  return { data: body, status: response.status };
-}
-
-/* ---------- Disari acilan API ---------- */
-const api = {
-  get: (path, config = {}) => request("GET", path, config),
-  post: (path, data, config = {}) => request("POST", path, { ...config, data }),
-  put: (path, data, config = {}) => request("PUT", path, { ...config, data }),
-  patch: (path, data, config = {}) => request("PATCH", path, { ...config, data }),
-  delete: (path, config = {}) => request("DELETE", path, config),
-};
-
 export default api;
-export { ApiError };
