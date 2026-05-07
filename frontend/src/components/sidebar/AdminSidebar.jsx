@@ -1,31 +1,18 @@
-import { Box, VStack, Link, Text, Flex, Separator } from "@chakra-ui/react";
+import { Box, VStack, Link, Text, Separator } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
 
 const menuSections = [
   {
-    label: "GENEL",
+    label: "YÖNETİM",
     items: [
-      { label: "Ana Sayfa", href: "/", icon: "\u2302" },
-      { label: "Panel", href: "/dashboard", icon: "\u25A6" },
-    ],
-  },
-  {
-    label: "PROJE",
-    items: [
-      { label: "Gruplarım", href: "/groups", icon: "\u2630" },
-      { label: "Üniversiteler", href: "/universities", icon: "\u2302" },
-    ],
-  },
-  {
-    label: "HESAP",
-    items: [
-      { label: "Profilim", href: "/profile", icon: "\u2603" },
-      { label: "Ayarlar", href: "/settings", icon: "\u2699" },
+      { label: "Üniversiteler", href: "/admin/universities", icon: "\u2302" },
+      { label: "Sistem Ayarları", href: "/admin/settings", icon: "\u2699" },
+      { label: "Kullanıcılar", href: "/admin/users", icon: "\u{1F465}" },
     ],
   },
 ];
 
-const Sidebar = () => {
+const AdminSidebar = () => {
   const location = useLocation();
 
   return (
@@ -96,4 +83,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar;
+export default AdminSidebar;

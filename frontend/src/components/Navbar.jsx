@@ -77,13 +77,22 @@ const Navbar = () => {
           Ana Sayfa
         </Link>
         <Link
-          href="/dashboard"
+          href="/admin"
           fontSize="sm"
           opacity={0.9}
           _hover={{ opacity: 1, textDecoration: "none" }}
           display={{ base: "none", md: "inline" }}
         >
-          Panel
+          Admin Paneli
+        </Link>
+        <Link
+          href="/coordinator"
+          fontSize="sm"
+          opacity={0.9}
+          _hover={{ opacity: 1, textDecoration: "none" }}
+          display={{ base: "none", md: "inline" }}
+        >
+          Koordinatör Paneli
         </Link>
 
         <Flex
