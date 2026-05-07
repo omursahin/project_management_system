@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -12,8 +12,8 @@ import {
   createListCollection,
   Flex,
 } from "@chakra-ui/react";
-import api from "../services/api.js";
 import { authApi, saveAuth } from "../services/auth.js";
+import { departments as departmentsResource } from "../services/resources.js";
 import AuthLayout from "../components/ui/AuthLayout.jsx";
 import FormField from "../components/ui/FormField.jsx";
 
@@ -36,13 +36,7 @@ function Register() {
     data: departments = [],
     error: departmentsError,
     isLoading: isDepartmentsLoading,
-  } = useQuery({
-    queryKey: ["departments"],
-    queryFn: async () => {
-      const response = await api.get("/api/department/");
-      return response.data;
-    },
-  });
+  } = departmentsResource.useList();
 
   const registerMutation = useMutation({
     mutationFn: (payload) => authApi.register(payload),
