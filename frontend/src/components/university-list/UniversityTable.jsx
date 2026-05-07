@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table, Box, Badge, Button, Heading, Text, VStack, Input,
   DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter,
-  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert, AlertIcon
+  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert
 } from "@chakra-ui/react";
 
 // 1. .env DOSYASINDAN BASE URL ALIMI
@@ -82,7 +82,7 @@ const UniversityTable = () => {
 
   // Yükleme ve Hata Ekranları
   if (isLoading) return <Box p={10} textAlign="center"><Spinner size="xl" color="blue.500" /></Box>;
-  if (error) return <Alert status="error"><AlertIcon />Veriler yüklenirken bir hata oluştu!</Alert>;
+  if (error) return <Alert status="error">Veriler yüklenirken bir hata oluştu!</Alert>;
 
   return (
     <Box p={6} bg="white" borderRadius="lg" shadow="md" border="1px" borderColor="gray.200">
