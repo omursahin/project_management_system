@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
@@ -20,19 +20,15 @@ describe('Faculty Management Sayfası Testleri', () => {
   
   it('sayfa sorunsuz yüklenmeli ve ana başlık ekranda görünmeli', async () => {
     
-    // Sahte Cevap Hazırlıyoruz
+    // API'den boş liste dönüyormuş gibi davranıyoruz
     api.get.mockResolvedValue({ data: [] });
 
-    // Test için taze bir QueryClient oluşturuyoruz (Aksi halde testler hata verir)
     const queryClient = new QueryClient({
       defaultOptions: {
-        queries: {
-          retry: false, // Test ortamında hata olursa tekrar denemesini kapatıyoruz
-        },
+        queries: { retry: false },
       },
     });
 
-    // 3. Sayfayı Sanal Olarak Çizdiriyoruz (Artık QueryClientProvider ile sarmalanmış)
     render(
       <QueryClientProvider client={queryClient}>
         <BrowserRouter>
@@ -41,12 +37,16 @@ describe('Faculty Management Sayfası Testleri', () => {
       </QueryClientProvider>
     );
 
-    // 4. Ekranda Eleman Arıyoruz ve Doğruluyoruz
-    // React Query asenkron çalıştığı için sayfa yüklenirken "Veriler yükleniyor..." yazabilir
-    // Bu yüzden başlığın gelmesini bekliyoruz
-    const baslik = await screen.findByText('Fakülte Yönetimi');
+    // 1. Başlığı esnek bir Regex (/.../i) ve rol (heading) ile arıyoruz.
+    // Bu sayede görünmez boşluklara veya harf büyüklüğüne takılmaz!
+    const baslik = screen.getByRole('heading', { level: 2 });
+    expect(baslik).toHaveTextContent(/Fakülte Yönetimi/i);
     
-    expect(baslik).toBeInTheDocument();
+    // 2. React Query'nin çalışmayı bitirmesini garantiye almak için
+    // tablodaki boş durum yazısının ekrana gelmesini bekliyoruz.
+    await waitFor(() => {
+      expect(screen.getByText(/Kayıtlı fakülte bulunamadı/i)).toBeInTheDocument();
+    });
   });
 
 });
