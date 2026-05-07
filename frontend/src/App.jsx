@@ -9,6 +9,10 @@ import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
+
+// 1. YENİ EKLENDİ: Hazırladığımız sayfayı App.jsx'e çağırıyoruz
+import GroupProjectPage from "./components/group-project/GroupProjectPage.jsx";
+
 import { isAuthenticated } from "./services/auth.js";
 
 function PrivateRoute({ children }) {
@@ -30,6 +34,10 @@ function AppLayout() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/universities" element={<UniversityTable />} />
             <Route path="/groups" element={<Groups />} />
+
+            {/* 2. YENİ EKLENDİ: Sayfamıza bir URL adresi atıyoruz */}
+            <Route path="/group-projects" element={<GroupProjectPage />} />
+
           </Routes>
         </Box>
       </Flex>
