@@ -54,5 +54,5 @@ export function isAdmin() {
 
 export function isCoordinator() {
   const role = getUserRole();
-  return role === 'coordinator' || role === 'admin';
+  return role === 'coordinator';
 }

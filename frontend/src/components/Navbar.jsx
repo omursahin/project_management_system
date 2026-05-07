@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { authApi, clearAuth, getStoredTokens, getStoredUser } from "../services/auth.js";
 
+import { isAdmin, isCoordinator } from "../services/auth.js";
+
 function UserAvatar({ user }) {
   const initials = user
     ? `${(user.first_name?.[0] || "").toUpperCase()}${(user.last_name?.[0] || "").toUpperCase()}`
@@ -76,24 +78,28 @@ const Navbar = () => {
         >
           Ana Sayfa
         </Link>
-        <Link
-          href="/admin"
-          fontSize="sm"
-          opacity={0.9}
-          _hover={{ opacity: 1, textDecoration: "none" }}
-          display={{ base: "none", md: "inline" }}
-        >
-          Admin Paneli
-        </Link>
-        <Link
-          href="/coordinator"
-          fontSize="sm"
-          opacity={0.9}
-          _hover={{ opacity: 1, textDecoration: "none" }}
-          display={{ base: "none", md: "inline" }}
-        >
-          Koordinatör Paneli
-        </Link>
+        {isAdmin() && (
+          <Link
+            href="/admin"
+            fontSize="sm"
+            opacity={0.9}
+            _hover={{ opacity: 1, textDecoration: "none" }}
+            display={{ base: "none", md: "inline" }}
+          >
+            Admin Paneli
+          </Link>
+        )}
+        {isCoordinator() && (
+          <Link
+            href="/coordinator"
+            fontSize="sm"
+            opacity={0.9}
+            _hover={{ opacity: 1, textDecoration: "none" }}
+            display={{ base: "none", md: "inline" }}
+          >
+            Koordinatör Paneli
+          </Link>
+        )}
 
         <Flex
           align="center"
