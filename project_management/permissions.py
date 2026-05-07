@@ -1,6 +1,6 @@
-from rest_framework.permissions import BasePermission
 from group.models import Group
 from group_member.models import GroupMember
+from rest_framework.permissions import BasePermission
 
 
 def _get_owner_id(obj):
