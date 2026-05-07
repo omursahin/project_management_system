@@ -1,17 +1,10 @@
 import { Box, Grid, Text, Flex, Heading } from "@chakra-ui/react";
-import { useQuery } from "@tanstack/react-query";
-import api from "../services/api.js";
 import PageHeader from "../components/ui/PageHeader.jsx";
 import StatCard from "../components/ui/StatCard.jsx";
+import { groups as groupsResource } from "../services/resources.js";
 
 export default function Dashboard() {
-  const { data: groups = [] } = useQuery({
-    queryKey: ["dashboard-groups"],
-    queryFn: async () => {
-      const res = await api.get("/api/group/");
-      return res.data.results || res.data || [];
-    },
-  });
+  const { data: groups = [] } = groupsResource.useList();
 
   const totalGroups = groups.length;
   const ownedGroups = groups.filter(
