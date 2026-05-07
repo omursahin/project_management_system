@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "corsheaders",
     "drf_yasg",
+    "django_filters", #Issue 9
 ]
 
 MIDDLEWARE = [

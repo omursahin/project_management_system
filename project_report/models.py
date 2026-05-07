@@ -16,7 +16,7 @@ class ProjectReport(models.Model):
     )
     description = models.CharField(max_length=255, blank=True)
 
-    file = models.FileField(upload_to='project_reports/')
+    file = models.FileField(upload_to='project_reports/', blank=True, null=True)
     plagiarism_file = models.FileField(upload_to='plagiarism_reports/', blank=True, null=True)
 
     is_submitted = models.BooleanField(default=False)

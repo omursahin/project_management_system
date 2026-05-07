@@ -72,6 +72,12 @@ while ! nc -z -w 2 $DB_HOST $DB_PORT; do\n\
 done\n\
 echo "PostgreSQL started"\n\
 \n\
+# Runtime config - frontend API URL ortam degiskeninden ayarlanir\n\
+if [ -n "$FRONTEND_API_URL" ] && [ -f /app/frontend/dist/config.js ]; then\n\
+  echo "Setting frontend API URL: $FRONTEND_API_URL"\n\
+  echo "window.APP_CONFIG = { API_URL: \"$FRONTEND_API_URL\" };" > /app/frontend/dist/config.js\n\
+fi\n\
+\n\
 echo "Running migrations..."\n\
 python manage.py migrate --noinput\n\
 \n\
