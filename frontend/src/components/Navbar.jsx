@@ -1,7 +1,7 @@
 import { Flex, Box, Text, Button, Link } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import { authApi, clearAuth, getStoredTokens, getStoredUser } from "../services/auth.js";
+import { authApi, clearAuth, getStoredTokens, useAuthUser } from "../services/auth.js";
 
 function UserAvatar({ user }) {
   const initials = user
@@ -27,7 +27,7 @@ function UserAvatar({ user }) {
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const user = getStoredUser();
+  const user = useAuthUser();
 
   const logoutMutation = useMutation({
     mutationFn: () => {
@@ -60,7 +60,7 @@ const Navbar = () => {
       top="0"
       zIndex="1000"
     >
-      <Link href="/" _hover={{ textDecoration: "none" }}>
+      <Link as={RouterLink} to="/" _hover={{ textDecoration: "none" }}>
         <Text fontSize="lg" fontWeight="bold" letterSpacing="wider">
           PROJE YÖNETİM
         </Text>
@@ -68,7 +68,8 @@ const Navbar = () => {
 
       <Flex align="center" gap={4}>
         <Link
-          href="/"
+          as={RouterLink}
+          to="/"
           fontSize="sm"
           opacity={0.9}
           _hover={{ opacity: 1, textDecoration: "none" }}
@@ -77,7 +78,8 @@ const Navbar = () => {
           Ana Sayfa
         </Link>
         <Link
-          href="/dashboard"
+          as={RouterLink}
+          to="/dashboard"
           fontSize="sm"
           opacity={0.9}
           _hover={{ opacity: 1, textDecoration: "none" }}
@@ -85,8 +87,20 @@ const Navbar = () => {
         >
           Panel
         </Link>
+        <Link
+          as={RouterLink}
+          to="/profile"
+          fontSize="sm"
+          opacity={0.9}
+          _hover={{ opacity: 1, textDecoration: "none" }}
+          display={{ base: "none", md: "inline" }}
+        >
+          Profilim
+        </Link>
 
         <Flex
+          as={RouterLink}
+          to="/profile"
           align="center"
           gap={2}
           bg="whiteAlpha.200"
@@ -94,6 +108,7 @@ const Navbar = () => {
           pl={1}
           pr={3}
           py={1}
+          _hover={{ bg: "whiteAlpha.300", textDecoration: "none" }}
         >
           <UserAvatar user={user} />
           <Text fontSize="sm" fontWeight="medium" display={{ base: "none", sm: "inline" }}>
