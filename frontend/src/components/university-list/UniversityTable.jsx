@@ -1,80 +1,95 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table, Box, Badge, Button, Heading, Text, VStack, Input,
   DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter,
-  DialogTitle, DialogCloseTrigger, HStack
+  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert, AlertIcon
 } from "@chakra-ui/react";
 
+// 1. .env DOSYASINDAN BASE URL ALIMI
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://10.70.128.50:8000';
+
 const UniversityTable = () => {
-  // State Tanımlamaları
-  const [universities, setUniversities] = useState([]); // Başlangıç boş, API'den dolacak
+  const queryClient = useQueryClient();
+  
+  // Modal/Form State'leri
   const [selectedUni, setSelectedUni] = useState(null);
   const [deleteUni, setDeleteUni] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState({ id: null, name: "", city: "", type: "Devlet", detail: "" });
 
-  // 1. VERİLERİ API'DEN ÇEKME (GET)
-  const fetchUniversities = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/api/universities/');
-      // Backend'deki alan adlarını (title, city_code) frontend'e (name, city) çeviriyoruz
-      const formattedData = response.data.map(uni => ({
+  // -----------------------------------------------------------
+  // 2. VERİ ÇEKME (GET) - useQuery
+  // -----------------------------------------------------------
+  const { data: universities, isLoading, error } = useQuery({
+    queryKey: ['universities'],
+    queryFn: async () => {
+      const response = await axios.get(`${API_BASE_URL}/api/universities/`);
+      // Backend (title, city_code) -> Frontend (name, city) dönüşümü
+      return response.data.map(uni => ({
         id: uni.id,
         name: uni.title,
         city: uni.city_code,
         type: uni.type,
         detail: uni.description
       }));
-      setUniversities(formattedData);
-    } catch (error) {
-      console.error("Veriler çekilemedi:", error);
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchUniversities();
-  }, []);
-
-  // 2. KAYDET VEYA GÜNCELLE (POST/PUT)
-  const handleSave = async () => {
-    const payload = {
-      title: formData.name,
-      description: formData.detail,
-      city_code: formData.city,
-      type: formData.type
-    };
-
-    try {
-      if (formData.id) {
-        await axios.put(`http://127.0.0.1:8000/api/universities/${formData.id}/`, payload);
-      } else {
-        await axios.post('http://127.0.0.1:8000/api/universities/', payload);
+  // -----------------------------------------------------------
+  // 3. KAYDET / GÜNCELLE (POST/PUT) - useMutation
+  // -----------------------------------------------------------
+  const saveMutation = useMutation({
+    mutationFn: async (newData) => {
+      const payload = {
+        title: newData.name,
+        description: newData.detail,
+        city_code: newData.city,
+        type: newData.type
+      };
+      if (newData.id) {
+        return axios.put(`${API_BASE_URL}/api/universities/${newData.id}/`, payload);
       }
-      fetchUniversities(); // Listeyi yenile
+      return axios.post(`${API_BASE_URL}/api/universities/`, payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['universities']); // Listeyi otomatik yenile
       setIsFormOpen(false);
-    } catch (error) {
-      console.error("İşlem başarısız:", error);
     }
+  });
+
+  // -----------------------------------------------------------
+  // 4. SİLME (DELETE) - useMutation
+  // -----------------------------------------------------------
+  const deleteMutation = useMutation({
+    mutationFn: (id) => axios.delete(`${API_BASE_URL}/api/universities/${id}/`),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['universities']); // Listeyi otomatik yenile
+      setDeleteUni(null);
+    }
+  });
+
+  // Formu Kaydetme Tetikleyicisi
+  const handleSave = () => {
+    saveMutation.mutate(formData);
   };
 
-  // 3. SİLME (DELETE)
-  const handleDelete = async () => {
-    try {
-      await axios.delete(`http://127.0.0.1:8000/api/universities/${deleteUni.id}/`);
-      fetchUniversities();
-      setDeleteUni(null);
-    } catch (error) {
-      console.error("Silme başarısız:", error);
-    }
+  // Silme Tetikleyicisi
+  const handleDelete = () => {
+    if (deleteUni) deleteMutation.mutate(deleteUni.id);
   };
+
+  // Yükleme ve Hata Ekranları
+  if (isLoading) return <Box p={10} textAlign="center"><Spinner size="xl" color="blue.500" /></Box>;
+  if (error) return <Alert status="error"><AlertIcon />Veriler yüklenirken bir hata oluştu!</Alert>;
 
   return (
     <Box p={6} bg="white" borderRadius="lg" shadow="md" border="1px" borderColor="gray.200">
       <HStack justify="space-between" align="flex-end" mb={6}>
         <VStack align="start" gap="0">
           <Heading size="md" color="gray.800">Üniversite Yönetim Sistemi</Heading>
-          <Text color="gray.500" fontSize="sm">Kayıtlı üniversiteleri yönetin.</Text>
+          <Text color="gray.500" fontSize="sm">React Query ile modernize edildi.</Text>
         </VStack>
         <Button 
           colorPalette="blue" 
@@ -98,7 +113,7 @@ const UniversityTable = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {universities.map((uni) => (
+          {universities?.map((uni) => (
             <Table.Row key={uni.id} _hover={{ bg: "blue.50" }}>
               <Table.Cell color="gray.500">#{uni.id}</Table.Cell>
               <Table.Cell fontWeight="semibold">{uni.name}</Table.Cell>
@@ -161,7 +176,7 @@ const UniversityTable = () => {
               </Box>
               <HStack justify="end">
                 <Button variant="outline" onClick={() => setIsFormOpen(false)}>Vazgeç</Button>
-                <Button colorPalette="blue" onClick={handleSave}>Kaydet</Button>
+                <Button colorPalette="blue" loading={saveMutation.isPending} onClick={handleSave}>Kaydet</Button>
               </HStack>
             </VStack>
           </DialogBody>
@@ -176,7 +191,7 @@ const UniversityTable = () => {
           <DialogFooter>
             <HStack gap="3" width="full">
               <Button variant="outline" flex="1" onClick={() => setDeleteUni(null)}>Vazgeç</Button>
-              <Button colorPalette="red" flex="1" onClick={handleDelete}>Evet, Sil</Button>
+              <Button colorPalette="red" flex="1" loading={deleteMutation.isPending} onClick={handleDelete}>Evet, Sil</Button>
             </HStack>
           </DialogFooter>
         </DialogContent>
