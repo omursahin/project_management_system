@@ -6,7 +6,7 @@ import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 
-// Bileşenleri import et
+// Sayfalar
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
 import FacultyManagement from "./pages/FacultyManagement.jsx"; 
@@ -41,7 +41,6 @@ function App() {
                       element={
                         <Box>
                           <h1>Panel (Dashboard)</h1>
-                          <p>İstatistikler ve özet bilgiler burada yer alacak.</p>
                         </Box>
                       }
                     />
