@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { render } from "../test/test-utils";
 import Login from "../pages/Login";
 
-// api modülünü mock'la
 vi.mock("../services/api.js", () => ({
   default: {
     post: vi.fn(),
@@ -19,12 +18,12 @@ describe("Login", () => {
 
   it("email input alanını gösterir", () => {
     render(<Login />);
-    expect(screen.getByPlaceholderText("Email")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("örnek@email.com")).toBeInTheDocument();
   });
 
   it("şifre input alanını gösterir", () => {
     render(<Login />);
-    expect(screen.getByPlaceholderText("Şifre")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Şifrenizi girin")).toBeInTheDocument();
   });
 
   it("giriş butonunu gösterir", () => {

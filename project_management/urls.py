@@ -16,7 +16,9 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import include, path, re_path
+from django.conf import settings
+from django.conf.urls.static import static
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -25,6 +27,7 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+from .views import FrontendView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -61,4 +64,14 @@ urlpatterns = [
     path('api/', include('term_lesson.urls')),
     path('api/term-lesson-student/', include('term_lesson_student.urls')),
     path('api/group-project/', include('group_project.urls')),
+]
+
+# Static/media dosyalari catch-all'dan ONCE eklenmeli
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# Frontend fallback route - en sona eklenmeli
+urlpatterns += [
+    re_path(r'^.*$', FrontendView.as_view(), name='frontend'),
 ]
