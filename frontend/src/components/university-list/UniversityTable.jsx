@@ -1,152 +1,159 @@
 import { useState } from "react";
-import axios from "axios";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Table, Box, Badge, Button, Heading, Text, VStack, Input,
-  DialogRoot, DialogContent, DialogHeader, DialogBody, DialogFooter,
-  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert
+  Table, Box, Badge, Button, Text, VStack, Input,
+  DialogRoot, DialogContent, DialogHeader, DialogBody,
+  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert,
 } from "@chakra-ui/react";
+import PageHeader from "../ui/PageHeader.jsx";
+import FormField from "../ui/FormField.jsx";
+import { universities } from "../../services/resources.js";
 
-// 1. .env DOSYASINDAN BASE URL ALIMI
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://10.70.128.50:8000';
+const EMPTY_FORM = { id: null, name: "", city: "", type: "Devlet", detail: "" };
 
 const UniversityTable = () => {
-  const queryClient = useQueryClient();
-  
-  // Modal/Form State'leri
   const [selectedUni, setSelectedUni] = useState(null);
   const [deleteUni, setDeleteUni] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formData, setFormData] = useState({ id: null, name: "", city: "", type: "Devlet", detail: "" });
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
-  // -----------------------------------------------------------
-  // 2. VERİ ÇEKME (GET) - useQuery
-  // -----------------------------------------------------------
-  const { data: universities, isLoading, error } = useQuery({
-    queryKey: ['universities'],
-    queryFn: async () => {
-      const response = await axios.get(`${API_BASE_URL}/api/universities/`);
-      // Backend (title, city_code) -> Frontend (name, city) dönüşümü
-      return response.data.map(uni => ({
-        id: uni.id,
-        name: uni.title,
-        city: uni.city_code,
-        type: uni.type,
-        detail: uni.description
-      }));
-    }
-  });
+  // React Query hook'lari - generic resource yapisindan
+  const { data: list = [], isLoading, error } = universities.useList();
+  const createMutation = universities.useCreate({ onSuccess: () => setIsFormOpen(false) });
+  const updateMutation = universities.useUpdate({ onSuccess: () => setIsFormOpen(false) });
+  const deleteMutation = universities.useDelete({ onSuccess: () => setDeleteUni(null) });
 
-  // -----------------------------------------------------------
-  // 3. KAYDET / GÜNCELLE (POST/PUT) - useMutation
-  // -----------------------------------------------------------
-  const saveMutation = useMutation({
-    mutationFn: async (newData) => {
-      const payload = {
-        title: newData.name,
-        description: newData.detail,
-        city_code: newData.city,
-        type: newData.type
-      };
-      if (newData.id) {
-        return axios.put(`${API_BASE_URL}/api/universities/${newData.id}/`, payload);
-      }
-      return axios.post(`${API_BASE_URL}/api/universities/`, payload);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['universities']); // Listeyi otomatik yenile
-      setIsFormOpen(false);
-    }
-  });
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
-  // -----------------------------------------------------------
-  // 4. SİLME (DELETE) - useMutation
-  // -----------------------------------------------------------
-  const deleteMutation = useMutation({
-    mutationFn: (id) => axios.delete(`${API_BASE_URL}/api/universities/${id}/`),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['universities']); // Listeyi otomatik yenile
-      setDeleteUni(null);
-    }
-  });
-
-  // Formu Kaydetme Tetikleyicisi
   const handleSave = () => {
-    saveMutation.mutate(formData);
+    if (formData.id) {
+      updateMutation.mutate(formData);
+    } else {
+      const { id, ...rest } = formData;
+      createMutation.mutate(rest);
+    }
   };
 
-  // Silme Tetikleyicisi
   const handleDelete = () => {
     if (deleteUni) deleteMutation.mutate(deleteUni.id);
   };
 
-  // Yükleme ve Hata Ekranları
-  if (isLoading) return <Box p={10} textAlign="center"><Spinner size="xl" color="blue.500" /></Box>;
-  if (error) return <Alert status="error">Veriler yüklenirken bir hata oluştu!</Alert>;
+  if (isLoading) {
+    return (
+      <Box>
+        <PageHeader title="Üniversiteler" subtitle="Yükleniyor..." />
+        <Box textAlign="center" py={10}>
+          <Spinner size="xl" color="teal.500" />
+        </Box>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box>
+        <PageHeader title="Üniversiteler" />
+        <Alert.Root status="error" borderRadius="lg">
+          <Alert.Indicator />
+          <Alert.Title>Veriler yüklenirken bir hata oluştu.</Alert.Title>
+        </Alert.Root>
+      </Box>
+    );
+  }
 
   return (
-    <Box p={6} bg="white" borderRadius="lg" shadow="md" border="1px" borderColor="gray.200">
-      <HStack justify="space-between" align="flex-end" mb={6}>
-        <VStack align="start" gap="0">
-          <Heading size="md" color="gray.800">Üniversite Yönetim Sistemi</Heading>
-          <Text color="gray.500" fontSize="sm">React Query ile modernize edildi.</Text>
-        </VStack>
-        <Button 
-          colorPalette="blue" 
+    <Box>
+      <PageHeader
+        title="Üniversiteler"
+        subtitle="Kayıtlı üniversiteleri yönetin ve detaylarını inceleyin."
+      >
+        <Button
+          bg="teal.500"
+          color="white"
+          _hover={{ bg: "teal.600" }}
           onClick={() => {
-            setFormData({ id: null, name: "", city: "", type: "Devlet", detail: "" });
+            setFormData(EMPTY_FORM);
             setIsFormOpen(true);
           }}
         >
-          Yeni Üniversite Ekle
+          + Yeni Üniversite
         </Button>
-      </HStack>
+      </PageHeader>
 
-      <Table.Root variant="striped" stickyHeader interactive>
-        <Table.Header>
-          <Table.Row bg="gray.50">
-            <Table.ColumnHeader>ID</Table.ColumnHeader>
-            <Table.ColumnHeader>Üniversite Adı</Table.ColumnHeader>
-            <Table.ColumnHeader>Şehir</Table.ColumnHeader>
-            <Table.ColumnHeader>Tür</Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="end">İşlemler</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {universities?.map((uni) => (
-            <Table.Row key={uni.id} _hover={{ bg: "blue.50" }}>
-              <Table.Cell color="gray.500">#{uni.id}</Table.Cell>
-              <Table.Cell fontWeight="semibold">{uni.name}</Table.Cell>
-              <Table.Cell>{uni.city}</Table.Cell>
-              <Table.Cell>
-                <Badge colorPalette={uni.type === "Devlet" ? "blue" : "purple"} variant="subtle">
-                  {uni.type}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell textAlign="end">
-                <HStack gap="2" justify="end">
-                  <Button size="xs" variant="ghost" colorPalette="orange" onClick={() => { setFormData(uni); setIsFormOpen(true); }}>
-                    Düzenle
-                  </Button>
-                  <Button size="xs" variant="ghost" colorPalette="red" onClick={() => setDeleteUni(uni)}>
-                    Sil
-                  </Button>
-                  <Button size="xs" variant="outline" colorPalette="blue" onClick={() => setSelectedUni(uni)}>
-                    Detay
-                  </Button>
-                </HStack>
-              </Table.Cell>
+      <Box bg="white" borderRadius="xl" shadow="sm" border="1px solid" borderColor="gray.100" overflow="hidden">
+        <Table.Root variant="striped" stickyHeader interactive>
+          <Table.Header>
+            <Table.Row bg="gray.50">
+              <Table.ColumnHeader color="gray.500" fontSize="xs" fontWeight="bold" letterSpacing="wider">ID</Table.ColumnHeader>
+              <Table.ColumnHeader color="gray.500" fontSize="xs" fontWeight="bold" letterSpacing="wider">ÜNİVERSİTE ADI</Table.ColumnHeader>
+              <Table.ColumnHeader color="gray.500" fontSize="xs" fontWeight="bold" letterSpacing="wider">ŞEHİR</Table.ColumnHeader>
+              <Table.ColumnHeader color="gray.500" fontSize="xs" fontWeight="bold" letterSpacing="wider">TÜR</Table.ColumnHeader>
+              <Table.ColumnHeader color="gray.500" fontSize="xs" fontWeight="bold" letterSpacing="wider" textAlign="end">İŞLEMLER</Table.ColumnHeader>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+          </Table.Header>
+          <Table.Body>
+            {list.length === 0 ? (
+              <Table.Row>
+                <Table.Cell colSpan={5} textAlign="center" color="gray.400" py={8}>
+                  Henüz kayıtlı üniversite yok.
+                </Table.Cell>
+              </Table.Row>
+            ) : (
+              list.map((uni) => (
+                <Table.Row key={uni.id} _hover={{ bg: "teal.50" }}>
+                  <Table.Cell color="gray.400" fontSize="sm">#{uni.id}</Table.Cell>
+                  <Table.Cell fontWeight="medium" color="gray.700">{uni.name}</Table.Cell>
+                  <Table.Cell color="gray.600">{uni.city}</Table.Cell>
+                  <Table.Cell>
+                    <Badge
+                      colorPalette={uni.type === "Devlet" ? "teal" : "purple"}
+                      variant="subtle"
+                      borderRadius="full"
+                      px={3}
+                    >
+                      {uni.type}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell textAlign="end">
+                    <HStack gap={2} justify="end">
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        colorPalette="orange"
+                        onClick={() => { setFormData(uni); setIsFormOpen(true); }}
+                      >
+                        Düzenle
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        colorPalette="red"
+                        onClick={() => setDeleteUni(uni)}
+                      >
+                        Sil
+                      </Button>
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        colorPalette="teal"
+                        onClick={() => setSelectedUni(uni)}
+                      >
+                        Detay
+                      </Button>
+                    </HStack>
+                  </Table.Cell>
+                </Table.Row>
+              ))
+            )}
+          </Table.Body>
+        </Table.Root>
+      </Box>
 
-      {/* DETAY DİYALOĞU */}
+      {/* Detay Diyalogu */}
       <DialogRoot open={!!selectedUni} onOpenChange={(e) => !e.open && setSelectedUni(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>{selectedUni?.name}</DialogTitle></DialogHeader>
           <DialogBody pb={6}>
-            <VStack align="start">
+            <VStack align="start" gap={3}>
               <Text><strong>Şehir:</strong> {selectedUni?.city}</Text>
               <Text><strong>Tür:</strong> {selectedUni?.type}</Text>
               <Text><strong>Hakkında:</strong> {selectedUni?.detail}</Text>
@@ -156,44 +163,74 @@ const UniversityTable = () => {
         </DialogContent>
       </DialogRoot>
 
-      {/* EKLEME/DÜZENLEME FORMU */}
+      {/* Ekleme/Duzenleme Formu */}
       <DialogRoot open={isFormOpen} onOpenChange={(e) => setIsFormOpen(e.open)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>{formData.id ? "Üniversiteyi Düzenle" : "Yeni Üniversite Ekle"}</DialogTitle></DialogHeader>
+          <DialogHeader>
+            <DialogTitle>{formData.id ? "Üniversiteyi Düzenle" : "Yeni Üniversite Ekle"}</DialogTitle>
+          </DialogHeader>
           <DialogBody pb={6}>
-            <VStack gap="4" align="stretch">
-              <Box>
-                <Text mb="2" fontSize="sm" fontWeight="medium">Üniversite Adı</Text>
-                <Input value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-              </Box>
-              <Box>
-                <Text mb="2" fontSize="sm" fontWeight="medium">Şehir</Text>
-                <Input value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
-              </Box>
-              <Box>
-                <Text mb="2" fontSize="sm" fontWeight="medium">Hakkında</Text>
-                <Input value={formData.detail} onChange={(e) => setFormData({...formData, detail: e.target.value})} />
-              </Box>
-              <HStack justify="end">
-                <Button variant="outline" onClick={() => setIsFormOpen(false)}>Vazgeç</Button>
-                <Button colorPalette="blue" loading={saveMutation.isPending} onClick={handleSave}>Kaydet</Button>
+            <VStack gap={4} align="stretch">
+              <FormField
+                label="Üniversite Adı"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+              <FormField
+                label="Şehir"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              />
+              <FormField
+                label="Hakkında"
+                multiline
+                rows={3}
+                value={formData.detail}
+                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+              />
+              <HStack justify="end" pt={2}>
+                <Button variant="ghost" onClick={() => setIsFormOpen(false)}>
+                  Vazgeç
+                </Button>
+                <Button
+                  bg="teal.500"
+                  color="white"
+                  _hover={{ bg: "teal.600" }}
+                  loading={isSaving}
+                  onClick={handleSave}
+                >
+                  Kaydet
+                </Button>
               </HStack>
             </VStack>
           </DialogBody>
+          <DialogCloseTrigger />
         </DialogContent>
       </DialogRoot>
 
-      {/* SİLME ONAYI */}
-      <DialogRoot open={!!deleteUni} onOpenChange={() => setDeleteUni(null)}>
+      {/* Silme Onayi */}
+      <DialogRoot open={!!deleteUni} onOpenChange={(e) => !e.open && setDeleteUni(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Üniversiteyi Sil</DialogTitle></DialogHeader>
-          <DialogBody><Text><strong>{deleteUni?.name}</strong> silinecek. Emin misiniz?</Text></DialogBody>
-          <DialogFooter>
-            <HStack gap="3" width="full">
-              <Button variant="outline" flex="1" onClick={() => setDeleteUni(null)}>Vazgeç</Button>
-              <Button colorPalette="red" flex="1" loading={deleteMutation.isPending} onClick={handleDelete}>Evet, Sil</Button>
+          <DialogHeader><DialogTitle>Silmeyi Onayla</DialogTitle></DialogHeader>
+          <DialogBody pb={6}>
+            <Text>
+              <strong>{deleteUni?.name}</strong> üniversitesini silmek istediğinize emin misiniz?
+              Bu işlem geri alınamaz.
+            </Text>
+            <HStack justify="end" pt={4}>
+              <Button variant="ghost" onClick={() => setDeleteUni(null)}>
+                Vazgeç
+              </Button>
+              <Button
+                colorPalette="red"
+                loading={deleteMutation.isPending}
+                onClick={handleDelete}
+              >
+                Sil
+              </Button>
             </HStack>
-          </DialogFooter>
+          </DialogBody>
+          <DialogCloseTrigger />
         </DialogContent>
       </DialogRoot>
     </Box>
