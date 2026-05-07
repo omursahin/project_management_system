@@ -21,15 +21,24 @@ const FacultyManagement = () => {
   // --- API İSTEKLERİ ---
   
   // Sayfa ilk yüklendiğinde üniversiteleri ve fakülteleri API'den çeker
-  useEffect(() => {
-    fetchUniversities();
-    fetchFaculties();
-  }, []);
+  // 1. Üniversiteleri Çekme
+  const { data: universities = [] } = useQuery({
+    queryKey: ['universities'],
+    queryFn: async () => {
+      const response = await api.get('/universities/');
+      return response.data;
+    }
+  });
 
-  // Sadece seçili üniversite değiştiğinde fakülteleri tekrar filtreleyerek çeker
-  useEffect(() => {
-    fetchFaculties(filterUniversityId);
-  }, [filterUniversityId]);
+  // 2. Fakülteleri Çekme (Filtre değiştiğinde otomatik çalışır)
+  const { data: faculties = [], isLoading: isFacultiesLoading } = useQuery({
+    queryKey: ['faculties', filterUniversityId],
+    queryFn: async () => {
+      const url = filterUniversityId ? `/faculties/?university=${filterUniversityId}` : '/faculties/';
+      const response = await api.get(url);
+      return response.data;
+    }
+  });
 
   // Üniversiteleri getiren fonksiyon
   const fetchUniversities = async () => {

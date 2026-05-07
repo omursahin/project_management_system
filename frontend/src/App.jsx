@@ -10,7 +10,7 @@ import Register from "./pages/Register.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
 
-import FacultyManagement from './pages/FacultyManagement';
+import FacultyManagement from './pages/FacultyManagement.jsx';
 
 function App() {
   return (
