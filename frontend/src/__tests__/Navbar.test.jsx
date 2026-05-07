@@ -1,12 +1,19 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { screen } from "@testing-library/react";
 import { render } from "../test/test-utils";
 import Navbar from "../components/Navbar";
 
+vi.mock("../services/api.js", () => ({
+  default: {
+    post: vi.fn(),
+    get: vi.fn(),
+  },
+}));
+
 describe("Navbar", () => {
   it("proje başlığını gösterir", () => {
     render(<Navbar />);
-    expect(screen.getByText("WEB PROJE")).toBeInTheDocument();
+    expect(screen.getByText("PROJE YÖNETİM")).toBeInTheDocument();
   });
 
   it("Ana Sayfa linkini gösterir", () => {

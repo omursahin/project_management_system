@@ -1,13 +1,25 @@
-import { Box, Text, Center } from "@chakra-ui/react";
+import { Box, Text, Flex, Separator } from "@chakra-ui/react";
 
 const Footer = () => {
   return (
-    <Box as="footer" py={5} bg="gray.800" color="white" mt="auto">
-      <Center>
-        <Text fontSize="sm">
-          &copy; {new Date().getFullYear()} Web Programlama Dersi | Tüm Hakları Saklıdır.
+    <Box as="footer" bg="white" borderTop="1px solid" borderColor="gray.100" mt="auto">
+      <Flex
+        justify="space-between"
+        align="center"
+        px={6}
+        py={4}
+        maxW="1400px"
+        mx="auto"
+        direction={{ base: "column", sm: "row" }}
+        gap={2}
+      >
+        <Text fontSize="xs" color="gray.400">
+          &copy; {new Date().getFullYear()} Proje Yönetim Sistemi
         </Text>
-      </Center>
+        <Text fontSize="xs" color="gray.400">
+          Web Programlama Dersi
+        </Text>
+      </Flex>
     </Box>
   );
 };
