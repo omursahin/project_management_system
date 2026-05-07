@@ -6,11 +6,10 @@ import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 
-// University list bileşenini import et
+// Bileşenleri import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
-
-import FacultyManagement from './pages/FacultyManagement.jsx';
+import FacultyManagement from "./pages/FacultyManagement.jsx"; 
 
 function App() {
   return (
@@ -18,7 +17,6 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/faculties" element={<FacultyManagement />} />
 
         <Route
           path="/*"
@@ -47,10 +45,11 @@ function App() {
                         </Box>
                       }
                     />
-                    {/* Üniversite listesi rotasını ekle */}
                     <Route path="/universities" element={<UniversityTable />} />
-
                     <Route path="/groups" element={<Groups />} />
+                    
+                    {/* Fakülte Yönetimi rotası */}
+                    <Route path="/faculties" element={<FacultyManagement />} />
 
                   </Routes>
                 </Box>
