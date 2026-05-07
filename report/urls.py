@@ -3,7 +3,8 @@ from rest_framework.routers import DefaultRouter
 from .views import ReportViewSet
 
 router = DefaultRouter()
-router.register(r'report', ReportViewSet, basename='report')
+# İçerideki r'report' kısmını sildik, sadece r'' kaldı.
+router.register(r'', ReportViewSet, basename='report')
 
 urlpatterns = [
     path('', include(router.urls)),
