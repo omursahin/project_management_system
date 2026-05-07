@@ -9,6 +9,7 @@ import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
+import Profile from "./pages/Profile.jsx";
 import { isAuthenticated } from "./services/auth.js";
 
 function PrivateRoute({ children }) {
@@ -30,6 +31,7 @@ function AppLayout() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/universities" element={<UniversityTable />} />
             <Route path="/groups" element={<Groups />} />
+            <Route path="/profile" element={<Profile />} />
           </Routes>
         </Box>
       </Flex>

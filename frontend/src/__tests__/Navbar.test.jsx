@@ -26,6 +26,11 @@ describe("Navbar", () => {
     expect(screen.getByText("Panel")).toBeInTheDocument();
   });
 
+  it("Profilim linkini gösterir", () => {
+    render(<Navbar />);
+    expect(screen.getAllByText("Profilim").length).toBeGreaterThan(0);
+  });
+
   it("Çıkış butonunu gösterir", () => {
     render(<Navbar />);
     expect(screen.getByText("Çıkış")).toBeInTheDocument();
