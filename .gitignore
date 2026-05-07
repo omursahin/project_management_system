@@ -141,4 +141,10 @@ postman/
 .postman/
 *.resources/
 
+# Frontend build output
+frontend/dist/
+
+# Django static files
+staticfiles/
+
 

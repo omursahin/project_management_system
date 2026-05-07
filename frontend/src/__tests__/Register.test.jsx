@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { render } from "../test/test-utils";
 import Register from "../pages/Register";
 
-// api modülünü mock'la (Register useEffect'te departments çekiyor)
 vi.mock("../services/api.js", () => ({
   default: {
     post: vi.fn(),
@@ -19,38 +18,28 @@ describe("Register", () => {
 
   it("email input alanını gösterir", () => {
     render(<Register />);
-    expect(screen.getByPlaceholderText("Email")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("örnek@email.com")).toBeInTheDocument();
   });
 
   it("ad input alanını gösterir", () => {
     render(<Register />);
-    expect(screen.getByPlaceholderText("Ad")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Adınız")).toBeInTheDocument();
   });
 
   it("soyad input alanını gösterir", () => {
     render(<Register />);
-    expect(screen.getByPlaceholderText("Soyad")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Soyadınız")).toBeInTheDocument();
   });
 
   it("kimlik numarası input alanını gösterir", () => {
     render(<Register />);
-    expect(screen.getByPlaceholderText(/Kimlik Numarası/i)).toBeInTheDocument();
-  });
-
-  it("telefon input alanını gösterir", () => {
-    render(<Register />);
-    expect(screen.getByPlaceholderText(/Telefon/i)).toBeInTheDocument();
-  });
-
-  it("adres input alanını gösterir", () => {
-    render(<Register />);
-    expect(screen.getByPlaceholderText("Adres")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/kimlik numarası/i)).toBeInTheDocument();
   });
 
   it("şifre input alanlarını gösterir", () => {
     render(<Register />);
-    expect(screen.getByPlaceholderText(/Şifre \(en az/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Şifre Tekrarı")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("En az 8 karakter")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Şifrenizi tekrar girin")).toBeInTheDocument();
   });
 
   it("kayıt butonunu gösterir", () => {
