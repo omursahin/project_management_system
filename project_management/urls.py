@@ -61,9 +61,11 @@ urlpatterns = [
     ),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 
+    path("api/allow-term-lesson/", include("allow_term_lesson.urls")),
     path('api/', include('term_lesson.urls')),
     path('api/term-lesson-student/', include('term_lesson_student.urls')),
     path('api/group-project/', include('group_project.urls')),
+    path('api/project-report/', include('project_report.urls')),
 ]
 
 # Static/media dosyalari catch-all'dan ONCE eklenmeli
