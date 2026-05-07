@@ -23,6 +23,12 @@ const menuSections = [
       { label: "Ayarlar", href: "/settings", icon: "\u2699" },
     ],
   },
+  {
+    label: "YÖNETİM",
+    items: [
+      { label: "Dönemler", href: "/terms", icon: "📅" },
+    ],
+  },
 ];
 
 const Sidebar = () => {
