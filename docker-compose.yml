@@ -1,35 +1,52 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15
-    container_name: postgres_db
+    container_name: project_management_db
+    restart: unless-stopped
     env_file:
       - .env
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+      POSTGRES_DB: ${DB_NAME:-project_db}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
-
-  web:
-    build: .
-    container_name: django_app
-    command: >
-      bash -c "python manage.py makemigrations &&
-               python manage.py migrate &&
-               python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/app
-    ports:
-      - "8000:8000"
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-project_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - project-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: project-management-backend:latest
+    container_name: project_management_backend
+    restart: unless-stopped
     env_file:
       - .env
+    environment:
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_HOST=db
+      - DB_PORT=5432
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./media:/app/media
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    networks:
+      - project-network
 
 volumes:
-  postgres_data:
+  db_data:
+
+networks:
+  project-network:
+    driver: bridge

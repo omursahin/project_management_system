@@ -4,19 +4,24 @@ import { render } from "../test/test-utils";
 import Sidebar from "../components/Sidebar";
 
 describe("Sidebar", () => {
-  it("MENÜ başlığını gösterir", () => {
+  it("GENEL bölüm başlığını gösterir", () => {
     render(<Sidebar />);
-    expect(screen.getByText("MENÜ")).toBeInTheDocument();
+    expect(screen.getByText("GENEL")).toBeInTheDocument();
+  });
+
+  it("PROJE bölüm başlığını gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("PROJE")).toBeInTheDocument();
+  });
+
+  it("HESAP bölüm başlığını gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("HESAP")).toBeInTheDocument();
   });
 
   it("Ana Sayfa linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Ana Sayfa")).toBeInTheDocument();
-  });
-
-  it("Panel linkini gösterir", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Panel")).toBeInTheDocument();
   });
 
   it("Gruplarım linkini gösterir", () => {
@@ -27,11 +32,6 @@ describe("Sidebar", () => {
   it("Profilim linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Profilim")).toBeInTheDocument();
-  });
-
-  it("Ayarlar linkini gösterir", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Ayarlar")).toBeInTheDocument();
   });
 
   it("aside elementi olarak render eder", () => {
