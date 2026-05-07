@@ -1,23 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Box,
   Button,
-  Input,
   VStack,
   HStack,
   Heading,
   Text,
   Alert,
-  Textarea,
   Badge,
   Flex,
   Grid,
   Separator,
 } from "@chakra-ui/react";
-import api from "../services/api.js";
 import PageHeader from "../components/ui/PageHeader.jsx";
 import FormField from "../components/ui/FormField.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
+import {
+  useGroups,
+  useGroupDetail,
+  useCreateGroup,
+  useDeleteGroup,
+  useJoinGroup,
+  useLeaveGroup,
+} from "../services/groupApi.js";
 
 /* ────────────────── Yardımcı: panoya kopyala ────────────────── */
 function useCopyToClipboard() {
@@ -33,57 +38,57 @@ function useCopyToClipboard() {
   return { copiedCode, copy };
 }
 
+/* ────────────────── Yardımcı: hata mesajını sadeleştir ────────────────── */
+function extractErrorMessage(error, fallback = "Bir hata oluştu.") {
+  const data = error?.response?.data;
+  if (!data) return "Sunucuya bağlanılamadı.";
+  if (typeof data === "string") return data;
+  if (data.detail) return data.detail;
+  if (data.error) return data.error;
+  try {
+    return Object.values(data).flat().join(" ") || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 /* ═══════════════════ GRUP KARTI ═══════════════════ */
-function GroupCard({ group, onRefresh }) {
+function GroupCard({ group }) {
   const { copiedCode, copy } = useCopyToClipboard();
   const [expanded, setExpanded] = useState(false);
-  const [members, setMembers] = useState([]);
-  const [loadingMembers, setLoadingMembers] = useState(false);
-  const [leaving, setLeaving] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isOwner = group.owner === currentUser.id;
   const isCopied = copiedCode === group.invite_code;
 
-  const fetchMembers = async () => {
-    if (members.length > 0) {
-      setExpanded(!expanded);
-      return;
-    }
-    setLoadingMembers(true);
-    try {
-      const res = await api.get(`/api/group/${group.id}/`);
-      setMembers(res.data.members || []);
-      setExpanded(true);
-    } catch {
-      setMembers([]);
-      setExpanded(true);
-    } finally {
-      setLoadingMembers(false);
-    }
+  // Üye listesi sadece expand edildiğinde fetch edilir
+  const {
+    data: groupDetail,
+    isFetching: loadingMembers,
+  } = useGroupDetail(group.id, { enabled: expanded });
+
+  const members = groupDetail?.members || [];
+
+  const leaveMutation = useLeaveGroup({
+    onError: () => alert("Gruptan ayrılırken bir hata oluştu."),
+  });
+
+  const deleteMutation = useDeleteGroup({
+    onError: () => alert("Grup silinirken bir hata oluştu."),
+  });
+
+  const handleToggleMembers = () => {
+    setExpanded((prev) => !prev);
   };
 
-  const handleLeave = async () => {
+  const handleLeave = () => {
     if (!window.confirm("Gruptan ayrılmak istediğine emin misin?")) return;
-    setLeaving(true);
-    try {
-      await api.post(`/api/group/${group.id}/leave/`);
-      onRefresh();
-    } catch {
-      alert("Gruptan ayrılırken bir hata oluştu.");
-    } finally {
-      setLeaving(false);
-    }
+    leaveMutation.mutate(group.id);
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!window.confirm(`"${group.name}" grubunu silmek istediğine emin misin?`)) return;
-    try {
-      await api.delete(`/api/group/${group.id}/`);
-      onRefresh();
-    } catch {
-      alert("Grup silinirken bir hata oluştu.");
-    }
+    deleteMutation.mutate(group.id);
   };
 
   return (
@@ -144,7 +149,13 @@ function GroupCard({ group, onRefresh }) {
           <Text fontSize="xs" color="gray.400" fontWeight="medium">
             Davet Kodu
           </Text>
-          <Text fontSize="lg" fontWeight="bold" fontFamily="mono" color="teal.600" letterSpacing="wider">
+          <Text
+            fontSize="lg"
+            fontWeight="bold"
+            fontFamily="mono"
+            color="teal.600"
+            letterSpacing="wider"
+          >
             {group.invite_code}
           </Text>
         </Box>
@@ -161,10 +172,20 @@ function GroupCard({ group, onRefresh }) {
       {/* Üye listesi */}
       {expanded && (
         <Box mb={3} bg="gray.50" borderRadius="lg" p={3}>
-          <Text fontSize="xs" fontWeight="bold" color="gray.400" mb={2} letterSpacing="wider">
+          <Text
+            fontSize="xs"
+            fontWeight="bold"
+            color="gray.400"
+            mb={2}
+            letterSpacing="wider"
+          >
             ÜYELER
           </Text>
-          {members.length === 0 ? (
+          {loadingMembers ? (
+            <Text fontSize="sm" color="gray.400">
+              Yükleniyor...
+            </Text>
+          ) : members.length === 0 ? (
             <Text fontSize="sm" color="gray.400">
               Üye bilgisi yüklenemedi.
             </Text>
@@ -195,8 +216,8 @@ function GroupCard({ group, onRefresh }) {
           size="sm"
           variant="ghost"
           colorPalette="teal"
-          onClick={fetchMembers}
-          loading={loadingMembers}
+          onClick={handleToggleMembers}
+          loading={loadingMembers && expanded}
         >
           {expanded ? "Gizle" : "Üyeler"}
         </Button>
@@ -207,7 +228,7 @@ function GroupCard({ group, onRefresh }) {
             variant="ghost"
             colorPalette="red"
             onClick={handleLeave}
-            loading={leaving}
+            loading={leaveMutation.isPending}
           >
             Ayrıl
           </Button>
@@ -219,6 +240,7 @@ function GroupCard({ group, onRefresh }) {
             variant="ghost"
             colorPalette="red"
             onClick={handleDelete}
+            loading={deleteMutation.isPending}
             ml="auto"
           >
             Sil
@@ -236,40 +258,36 @@ function CreateGroupPanel({ onCreated, onCancel }) {
     description: "",
     max_members: 5,
   });
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const createMutation = useCreateGroup({
+    onSuccess: () => {
+      onCreated();
+    },
+    onError: (err) => {
+      setError(extractErrorMessage(err));
+    },
+  });
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
       setError("Grup adı zorunludur.");
       return;
     }
-    setLoading(true);
     setError("");
-    try {
-      await api.post("/api/group/", {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        max_members: Number(form.max_members) || 5,
-      });
-      onCreated();
-    } catch (err) {
-      const data = err.response?.data;
-      if (data) {
-        const msg = typeof data === "string" ? data : Object.values(data).flat().join(" ");
-        setError(msg || "Bir hata oluştu.");
-      } else {
-        setError("Sunucuya bağlanılamadı.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    createMutation.mutate({
+      name: form.name.trim(),
+      description: form.description.trim(),
+      max_members: Number(form.max_members) || 5,
+    });
   };
+
+  const loading = createMutation.isPending;
 
   return (
     <Box
@@ -323,7 +341,13 @@ function CreateGroupPanel({ onCreated, onCancel }) {
             w="120px"
           />
           <Flex gap={3} pt={2}>
-            <Button type="submit" bg="teal.500" color="white" _hover={{ bg: "teal.600" }} loading={loading}>
+            <Button
+              type="submit"
+              bg="teal.500"
+              color="white"
+              _hover={{ bg: "teal.600" }}
+              loading={loading}
+            >
               Oluştur
             </Button>
             <Button variant="ghost" onClick={onCancel} disabled={loading}>
@@ -339,35 +363,36 @@ function CreateGroupPanel({ onCreated, onCancel }) {
 /* ═══════════════════ GRUBA KATIL FORMU ═══════════════════ */
 function JoinGroupPanel({ onJoined, onCancel }) {
   const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const joinMutation = useJoinGroup({
+    onSuccess: () => {
+      onJoined();
+    },
+    onError: (err) => {
+      const status = err?.response?.status;
+      if (status === 404) {
+        setError("Bu davet koduna ait bir grup bulunamadı.");
+      } else if (status === 400) {
+        setError(extractErrorMessage(err, "Gruba katılırken bir hata oluştu."));
+      } else {
+        setError("Sunucuya bağlanılamadı.");
+      }
+    },
+  });
+
+  const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = code.trim().toUpperCase();
     if (!trimmed) {
       setError("Davet kodu zorunludur.");
       return;
     }
-    setLoading(true);
     setError("");
-    try {
-      await api.post("/api/group/join/", { invite_code: trimmed });
-      onJoined();
-    } catch (err) {
-      const data = err.response?.data;
-      if (err.response?.status === 404) {
-        setError("Bu davet koduna ait bir grup bulunamadı.");
-      } else if (err.response?.status === 400) {
-        const msg = data?.detail || data?.error || (typeof data === "string" ? data : Object.values(data).flat().join(" "));
-        setError(msg || "Gruba katılırken bir hata oluştu.");
-      } else {
-        setError("Sunucuya bağlanılamadı.");
-      }
-    } finally {
-      setLoading(false);
-    }
+    joinMutation.mutate(trimmed);
   };
+
+  const loading = joinMutation.isPending;
 
   return (
     <Box
@@ -409,7 +434,13 @@ function JoinGroupPanel({ onJoined, onCancel }) {
             </Text>
           </Box>
           <Flex gap={3} pt={2}>
-            <Button type="submit" bg="blue.500" color="white" _hover={{ bg: "blue.600" }} loading={loading}>
+            <Button
+              type="submit"
+              bg="blue.500"
+              color="white"
+              _hover={{ bg: "blue.600" }}
+              loading={loading}
+            >
               Katıl
             </Button>
             <Button variant="ghost" onClick={onCancel} disabled={loading}>
@@ -424,39 +455,21 @@ function JoinGroupPanel({ onJoined, onCancel }) {
 
 /* ═══════════════════ ANA SAYFA ═══════════════════ */
 export default function Groups() {
-  const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [activePanel, setActivePanel] = useState(null);
 
-  const fetchGroups = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await api.get("/api/group/");
-      setGroups(res.data.results || res.data || []);
-    } catch (err) {
-      if (err.response?.status !== 401) {
-        setError("Gruplar yüklenirken bir hata oluştu.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const {
+    data: groupsData,
+    isLoading,
+    error,
+  } = useGroups();
 
-  useEffect(() => {
-    fetchGroups();
-  }, [fetchGroups]);
+  // Backend bazen { results: [...] } bazen direkt array dönebiliyor
+  const groups = Array.isArray(groupsData)
+    ? groupsData
+    : groupsData?.results || [];
 
-  const handleCreated = () => {
-    setActivePanel(null);
-    fetchGroups();
-  };
-
-  const handleJoined = () => {
-    setActivePanel(null);
-    fetchGroups();
-  };
+  const handleCreated = () => setActivePanel(null);
+  const handleJoined = () => setActivePanel(null);
 
   return (
     <Box>
@@ -466,63 +479,89 @@ export default function Groups() {
       >
         {groups.length > 0 && !activePanel && (
           <>
-            <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setActivePanel("create")}>
+            <Button
+              bg="teal.500"
+              color="white"
+              _hover={{ bg: "teal.600" }}
+              onClick={() => setActivePanel("create")}
+            >
               + Yeni Grup
             </Button>
-            <Button variant="outline" colorPalette="blue" onClick={() => setActivePanel("join")}>
+            <Button
+              variant="outline"
+              colorPalette="blue"
+              onClick={() => setActivePanel("join")}
+            >
               Davet Koduyla Katıl
             </Button>
           </>
         )}
       </PageHeader>
 
-      {error && (
+      {error && error?.response?.status !== 401 && (
         <Alert.Root status="error" mb={4} borderRadius="lg">
           <Alert.Indicator />
-          <Alert.Title fontSize="sm">{error}</Alert.Title>
+          <Alert.Title fontSize="sm">
+            Gruplar yüklenirken bir hata oluştu.
+          </Alert.Title>
         </Alert.Root>
       )}
 
       {activePanel === "create" && (
         <Box mb={6}>
-          <CreateGroupPanel onCreated={handleCreated} onCancel={() => setActivePanel(null)} />
+          <CreateGroupPanel
+            onCreated={handleCreated}
+            onCancel={() => setActivePanel(null)}
+          />
         </Box>
       )}
 
       {activePanel === "join" && (
         <Box mb={6}>
-          <JoinGroupPanel onJoined={handleJoined} onCancel={() => setActivePanel(null)} />
+          <JoinGroupPanel
+            onJoined={handleJoined}
+            onCancel={() => setActivePanel(null)}
+          />
         </Box>
       )}
 
-      {loading && (
+      {isLoading && (
         <Flex justify="center" py={12}>
-          <Text color="gray.400" fontSize="sm">Yükleniyor...</Text>
+          <Text color="gray.400" fontSize="sm">
+            Yükleniyor...
+          </Text>
         </Flex>
       )}
 
-      {!loading && groups.length === 0 && !activePanel && (
+      {!isLoading && groups.length === 0 && !activePanel && (
         <EmptyState
-          icon={"\u{1F4C2}"}
           title="Henüz bir grubun yok"
-          description="Yeni bir grup oluştur veya davet koduyla mevcut bir gruba katıl."
+          description="Yeni bir grup oluşturarak veya davet koduyla mevcut bir gruba katılarak başlayabilirsin."
         >
-          <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setActivePanel("create")}>
-            Grup Oluştur
-          </Button>
-          <Button variant="outline" colorPalette="blue" onClick={() => setActivePanel("join")}>
-            Davet Koduyla Katıl
-          </Button>
+          <Flex gap={3} justify="center">
+            <Button
+              bg="teal.500"
+              color="white"
+              _hover={{ bg: "teal.600" }}
+              onClick={() => setActivePanel("create")}
+            >
+              + Yeni Grup
+            </Button>
+            <Button
+              variant="outline"
+              colorPalette="blue"
+              onClick={() => setActivePanel("join")}
+            >
+              Davet Koduyla Katıl
+            </Button>
+          </Flex>
         </EmptyState>
       )}
 
-      {!loading && groups.length > 0 && (
-        <Grid
-          templateColumns={{ base: "1fr", md: "1fr 1fr", xl: "1fr 1fr 1fr" }}
-          gap={5}
-        >
+      {!isLoading && groups.length > 0 && (
+        <Grid templateColumns={{ base: "1fr", md: "1fr 1fr", xl: "1fr 1fr 1fr" }} gap={4}>
           {groups.map((group) => (
-            <GroupCard key={group.id} group={group} onRefresh={fetchGroups} />
+            <GroupCard key={group.id} group={group} />
           ))}
         </Grid>
       )}
