@@ -1,13 +1,18 @@
 from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.exceptions import PermissionDenied
 # Bütün serializer'larımızı tek satırda temizce çağırdık
-from .serializers import LoginSerializer, RegisterSerializer, LogoutSerializer, ProfileSerializer
+from .serializers import LoginSerializer, RegisterSerializer, LogoutSerializer, ProfileSerializer, UserListSerializer
 
+# Issue 9
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
+from .models import MyUser
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -103,4 +108,19 @@ class ProfileAPIView(generics.RetrieveUpdateAPIView):
 
         return super().update(request, *args, **kwargs)
 
+# --- YENİ EKLENEN KISIM: Issue #9 ---
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
+
+class UserListView(generics.ListAPIView):
+    queryset = MyUser.objects.all().order_by('-date_joined')
+    serializer_class = UserListSerializer
+    permission_classes = [IsAdminUser]  # Sadece admin/staff
+    pagination_class = StandardResultsSetPagination
+
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_fields = ['department', 'is_active']  # Departman ve aktiflik filtreleri
+    search_fields = ['first_name', 'last_name', 'email']  # İsim ve email'de arama

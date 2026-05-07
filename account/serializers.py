@@ -107,3 +107,25 @@ class ProfileSerializer(serializers.ModelSerializer):
                     'department'
                 ]
                 read_only_fields = ['id', 'email', 'identification_number', 'department']
+
+
+# --- YENİ EKLENEN KISIM: Issue #9 ---
+class UserListSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.name', read_only=True)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "identification_number",
+            "phone_number",
+            "department",
+            "department_name",
+            "is_active",
+            "is_staff",
+            "date_joined",
+        ]
+
