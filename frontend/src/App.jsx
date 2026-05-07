@@ -5,6 +5,7 @@ import Sidebar from "./components/Sidebar.jsx";
 import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import LessonRegistration from './pages/LessonRegistration';
 
 // University list bileşenini import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
@@ -48,6 +49,7 @@ function App() {
                     <Route path="/universities" element={<UniversityTable />} />
 
                     <Route path="/groups" element={<Groups />} />
+                    <Route path="/ders-kayit" element={<LessonRegistration />} />
 
                   </Routes>
                 </Box>
