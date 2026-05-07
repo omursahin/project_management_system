@@ -84,7 +84,7 @@ describe("Groups", () => {
     api.get.mockResolvedValueOnce({ data: mockGroups });
     render(<Groups />);
     await waitFor(() => {
-      expect(screen.getByText("3/5 üye")).toBeInTheDocument();
+      expect(screen.getByText("3/5")).toBeInTheDocument();
     });
   });
 

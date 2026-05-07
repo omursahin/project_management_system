@@ -5,8 +5,8 @@ const menuItems = [
   { label: "Ana Sayfa", href: "/" },
   { label: "Panel", href: "/dashboard" },
   { label: "Gruplarım", href: "/groups" },
-  { label: "Üniversiteler", href: "/universities" }, // Gelen (Incoming) değişiklik
-  { label: "Fakülte Yönetimi", href: "/faculties" },  // Senin (Current) değişikliğin
+  { label: "Üniversiteler", href: "/universities" },
+  { label: "Fakülte Yönetimi", href: "/faculties" },
   { label: "Profilim", href: "/profile" },
   { label: "Ayarlar", href: "/settings" },
 ];

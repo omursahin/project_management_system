@@ -47,10 +47,7 @@ function App() {
                     />
                     <Route path="/universities" element={<UniversityTable />} />
                     <Route path="/groups" element={<Groups />} />
-                    
-                    {/* Fakülte Yönetimi rotası */}
                     <Route path="/faculties" element={<FacultyManagement />} />
-
                   </Routes>
                 </Box>
               </Flex>
