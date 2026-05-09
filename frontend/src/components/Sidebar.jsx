@@ -12,9 +12,10 @@ const menuSections = [
   {
     label: "PROJE",
     items: [
-      { label: "Gruplarım", href: "/groups", icon: "\u2630" },
-      { label: "Üniversiteler", href: "/universities", icon: "\u2302" },
-      { label: "Not Girişi", href: "/not-girisi", icon: "\u270E" },
+      {label: "Gruplarım", href: "/groups", icon: "\u2630"},
+      {label: "Üniversiteler", href: "/universities", icon: "\u2302"},
+      {label: "Not Girişi", href: "/not-girisi", icon: "\u270E"},
+    ],
   },
   {
     label: "HESAP",
