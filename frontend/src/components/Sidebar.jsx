@@ -14,6 +14,7 @@ const menuSections = [
     items: [
       { label: "Gruplarım", href: "/groups", icon: "\u2630" },
       { label: "Üniversiteler", href: "/universities", icon: "\u2302" },
+      { label: "Not Girişi", href: "/not-girisi", icon: "\u270E" },
     ],
   },
   {
@@ -23,6 +24,7 @@ const menuSections = [
       { label: "Ayarlar", href: "/settings", icon: "\u2699" },
     ],
   },
+
 ];
 
 const Sidebar = () => {
