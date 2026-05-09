@@ -61,7 +61,6 @@ const NotGirisi = () => {
       </Box>
 
       {/* Kaydet Butonu */}
-      <Flex justify="flex-end" mt={6}>
         <Button colorScheme="gray" mr={3} size="md">İptal</Button>
         <Button colorScheme="blue" size="md" boxShadow="md">💾 Notları Kaydet</Button>
       </Flex>
