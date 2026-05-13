@@ -25,6 +25,8 @@ api.interceptors.request.use((config) => {
     config.headers.Authorization = `Bearer ${tokens.access}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
 // 401 gelirse refresh token ile yenile, yine başarısızsa login'e yönlendir

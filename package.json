@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "dev": "vite --port 3000 --strictPort",
+    "test": "vitest run --environment jsdom"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.6"
+  }
+}
