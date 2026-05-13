@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -7,10 +7,12 @@ import { createQueryClient } from "../queryClient";
 
 // App kendi Router'ını içerdiği için test-utils kullanmıyoruz
 function renderApp() {
+  // Login sayfasına yönlendirileceği için token gerekiyor
+  localStorage.setItem("tokens", JSON.stringify({ access: "test", refresh: "test" }));
+  localStorage.setItem("user", JSON.stringify({ id: 1, first_name: "Test", last_name: "User" }));
+
   const queryClient = createQueryClient({
-    queries: {
-      retry: false,
-    },
+    queries: { retry: false },
   });
 
   return render(
@@ -22,16 +24,19 @@ function renderApp() {
   );
 }
 
+beforeEach(() => {
+  localStorage.clear();
+});
+
 describe("App", () => {
   it("hata vermeden render olur", () => {
     renderApp();
-    // App crash olmadan mount olmalı
     expect(document.body).toBeTruthy();
   });
 
   it("Navbar'ı içerir", () => {
     renderApp();
-    expect(screen.getByText("WEB PROJE")).toBeInTheDocument();
+    expect(screen.getByText("PROJE YÖNETİM")).toBeInTheDocument();
   });
 
   it("Footer'ı içerir", () => {
@@ -41,11 +46,20 @@ describe("App", () => {
 
   it("Sidebar'ı içerir", () => {
     renderApp();
-    expect(screen.getByText("MENÜ")).toBeInTheDocument();
+    expect(screen.getByText("GENEL")).toBeInTheDocument();
   });
 
-  it("ana sayfada karşılama mesajını gösterir", () => {
-    renderApp();
-    expect(screen.getByText(/Hoş Geldin/i)).toBeInTheDocument();
+  it("giriş yapmadan login sayfasına yönlendirir", () => {
+    localStorage.clear();
+    const queryClient = createQueryClient({ queries: { retry: false } });
+
+    render(
+      <ChakraProvider value={defaultSystem}>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </ChakraProvider>
+    );
+    expect(screen.getByRole("heading", { name: /Giriş Yap/i })).toBeInTheDocument();
   });
 });
