@@ -12,6 +12,7 @@ const menuSections = [
   {
     label: "PROJE",
     items: [
+      { label: "Dönem Dersleri", href: "/term-lessons", icon: "\u25EB" }, // Burayı ekledik
       { label: "Gruplarım", href: "/groups", icon: "\u2630" },
       { label: "Üniversiteler", href: "/universities", icon: "\u2302" },
     ],

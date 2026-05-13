@@ -8,7 +8,7 @@ import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
-import TermLessonTable from "./components/term-lesson-list/TermLessonTable.jsx"; // Yeni eklenen
+import TermLessonTable from "./components/term-lesson-list/TermLessonTable.jsx"; 
 import Groups from "./pages/Groups.jsx";
 import { isAuthenticated } from "./services/auth.js";
 
@@ -30,6 +30,10 @@ function AppLayout() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/universities" element={<UniversityTable />} />
+            
+            {/* Dönem Dersleri Rotası Artık Burada */}
+            <Route path="/term-lessons" element={<TermLessonTable />} /> 
+            
             <Route path="/groups" element={<Groups />} />
           </Routes>
         </Box>

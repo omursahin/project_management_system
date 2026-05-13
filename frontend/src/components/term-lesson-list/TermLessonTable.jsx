@@ -2,7 +2,7 @@ import { useState } from "react";
 import api from '../../services/api';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Table, Box, Heading, Text, VStack, HStack, Spinner, Alert, Button,
+  Table, Box, Heading, Text, VStack, HStack, Spinner, Button,
   Dialog, Field, Input, Stack, Badge
 } from "@chakra-ui/react";
 
@@ -38,7 +38,6 @@ const TermLessonTable = () => {
     }
   });
 
-  // SİLME İŞLEMİ (Yeni eklenen kısım)
   const deleteMutation = useMutation({
     mutationFn: (id) => api.delete(`/api/term-lesson/${id}/`),
     onSuccess: () => {
@@ -53,17 +52,15 @@ const TermLessonTable = () => {
     }
   });
 
-  if (isLoading) return <Box p={10} textAlign="center"><Spinner size="xl" /></Box>;
-
   return (
     <Box p={6} bg="white" borderRadius="lg" shadow="sm">
+      {/* BAŞLIK VE EKLEME BUTONU - HER ZAMAN GÖRÜNÜR */}
       <HStack justify="space-between" mb={6}>
         <VStack align="start" gap="0">
           <Heading size="md">Dönem Dersi Yönetimi</Heading>
           <Text color="gray.500" fontSize="sm">Dersleri ve öğrenci isteklerini yönetin.</Text>
         </VStack>
 
-        {/* YENİ KAYIT MODALI */}
         <Dialog.Root open={open} onOpenChange={(e) => setOpen(e.open)}>
           <Dialog.Trigger asChild>
             <Button colorPalette="blue" size="sm">Yeni Dönem Dersi Ekle</Button>
@@ -100,50 +97,61 @@ const TermLessonTable = () => {
         </Dialog.Root>
       </HStack>
 
-      {/* TABLO */}
-      <Table.Root variant="striped">
-        <Table.Header>
-          <Table.Row bg="gray.50">
-            <Table.ColumnHeader>Ders</Table.ColumnHeader>
-            <Table.ColumnHeader>Dönem</Table.ColumnHeader>
-            <Table.ColumnHeader>Hoca</Table.ColumnHeader>
-            <Table.ColumnHeader>Max Grup</Table.ColumnHeader>
-            <Table.ColumnHeader textAlign="end">İşlemler</Table.ColumnHeader>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {termLessons?.map((item) => (
-            <Table.Row key={item.id}>
-              <Table.Cell fontWeight="medium">{item.lesson_name}</Table.Cell>
-              <Table.Cell>{item.term_name}</Table.Cell>
-              <Table.Cell>{item.instructor_name}</Table.Cell>
-              <Table.Cell>{item.max_group_size}</Table.Cell>
-              <Table.Cell textAlign="end">
-                <HStack justify="end" gap="2">
-                  <Button 
-                    variant="outline" size="xs" colorPalette="teal" 
-                    onClick={() => { setSelectedLesson(item.id); setRequestOpen(true); }}
-                  >
-                    İstekler
-                  </Button>
-                  {/* SİL BUTONU AKTİFLEŞTİRİLDİ */}
-                  <Button 
-                    variant="ghost" 
-                    size="xs" 
-                    colorPalette="red"
-                    loading={deleteMutation.isPending && deleteMutation.variables === item.id}
-                    onClick={() => { if(window.confirm("Bu dersi silmek istediğinize emin misiniz?")) deleteMutation.mutate(item.id) }}
-                  >
-                    Sil
-                  </Button>
-                </HStack>
-              </Table.Cell>
+      {/* TABLO ALANI - YÜKLENİYORSA SPINNER, VERİ YOKSA UYARI GÖSTERİR */}
+      {isLoading ? (
+        <Box p={10} textAlign="center"><Spinner size="xl" /></Box>
+      ) : (
+        <Table.Root variant="striped">
+          <Table.Header>
+            <Table.Row bg="gray.50">
+              <Table.ColumnHeader>Ders</Table.ColumnHeader>
+              <Table.ColumnHeader>Dönem</Table.ColumnHeader>
+              <Table.ColumnHeader>Hoca</Table.ColumnHeader>
+              <Table.ColumnHeader>Max Grup</Table.ColumnHeader>
+              <Table.ColumnHeader textAlign="end">İşlemler</Table.ColumnHeader>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+          </Table.Header>
+          <Table.Body>
+            {termLessons && termLessons.length > 0 ? (
+              termLessons.map((item) => (
+                <Table.Row key={item.id}>
+                  <Table.Cell fontWeight="medium">{item.lesson_name}</Table.Cell>
+                  <Table.Cell>{item.term_name}</Table.Cell>
+                  <Table.Cell>{item.instructor_name}</Table.Cell>
+                  <Table.Cell>{item.max_group_size}</Table.Cell>
+                  <Table.Cell textAlign="end">
+                    <HStack justify="end" gap="2">
+                      <Button 
+                        variant="outline" size="xs" colorPalette="teal" 
+                        onClick={() => { setSelectedLesson(item.id); setRequestOpen(true); }}
+                      >
+                        İstekler
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="xs" 
+                        colorPalette="red"
+                        loading={deleteMutation.isPending && deleteMutation.variables === item.id}
+                        onClick={() => { if(window.confirm("Bu dersi silmek istediğinize emin misiniz?")) deleteMutation.mutate(item.id) }}
+                      >
+                        Sil
+                      </Button>
+                    </HStack>
+                  </Table.Cell>
+                </Table.Row>
+              ))
+            ) : (
+              <Table.Row>
+                <Table.Cell colSpan={5} textAlign="center" py={10}>
+                  <Text color="gray.500">Henüz kayıtlı bir dönem dersi bulunamadı. Yeni bir tane ekleyerek başlayın.</Text>
+                </Table.Cell>
+              </Table.Row>
+            )}
+          </Table.Body>
+        </Table.Root>
+      )}
 
-      {/* İSTEKLER MODALI (Aynı kalıyor) */}
+      {/* İSTEKLER MODALI */}
       <Dialog.Root open={requestOpen} onOpenChange={(e) => setRequestOpen(e.open)}>
         <Dialog.Content>
           <Dialog.Header><Dialog.Title>Gelen İşbirliği İstekleri</Dialog.Title></Dialog.Header>
