@@ -23,26 +23,40 @@ function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (payload) => {
-      const response = await api.post("/account/login/", payload);
+      // Backend'in gerçek giriş kapısına yönlendiriyoruz
+      const response = await api.post("/api/v1/token/", payload);
       return response.data;
     },
     onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/dashboard");
+      // Hem 'access' hem 'token' ihtimalini garantiye alıyoruz
+      const accessToken = data.access || data.token; 
+      
+      if (accessToken) {
+        // api.js dosyasındaki interceptor'ın beklediği isim: "token"
+        localStorage.setItem("token", accessToken);
+        
+        // Kullanıcı verisini güvenli bir şekilde kaydediyoruz
+        localStorage.setItem("user", JSON.stringify(data.user || data));
+        
+        // Başarılı girişten sonra dashboard'a uçuyoruz
+        navigate("/dashboard");
+      } else {
+        console.error("Token alınamadı, dönen veri yapısı hatalı:", data);
+        setErrors({ general: "Sunucudan geçerli bir anahtar alınamadı." });
+      }
     },
     onError: (error) => {
       if (error.response && error.response.data) {
-        if (error.response.data.error) {
-          setErrors({ general: error.response.data.error });
+        // Django'dan gelen 'detail' veya 'error' mesajlarını yakalıyoruz
+        const serverError = error.response.data.detail || error.response.data.error;
+        if (serverError) {
+          setErrors({ general: serverError });
           return;
         }
-
         setErrors(error.response.data);
         return;
       }
-
-      setErrors({ general: "Bir hata oluştu. Lütfen tekrar deneyin." });
+      setErrors({ general: "Giriş yapılamadı. Lütfen internet bağlantınızı ve bilgilerinizi kontrol edin." });
     },
   });
 
@@ -112,7 +126,7 @@ function Login() {
           </Heading>
 
           {errors.general && (
-            <Alert.Root status="error">
+            <Alert.Root status="error" variant="filled" borderRadius="md">
               <Alert.Indicator />
               <Alert.Title>{errors.general}</Alert.Title>
             </Alert.Root>
@@ -152,7 +166,13 @@ function Login() {
                 )}
               </Box>
 
-              <Button type="submit" colorScheme="blue" loading={isLoading}>
+              <Button 
+                type="submit" 
+                colorScheme="blue" 
+                width="full"
+                isLoading={isLoading}
+                loadingText="Giriş Yapılıyor..."
+              >
                 Giriş Yap
               </Button>
             </VStack>

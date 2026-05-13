@@ -4,27 +4,27 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
 });
 
-// Her istekte localStorage'dan JWT token'ı header'a ekle
 api.interceptors.request.use((config) => {
-  const tokens = localStorage.getItem("tokens");
-  if (tokens) {
-    const { access } = JSON.parse(tokens);
-    if (access) {
-      config.headers.Authorization = `Bearer ${access}`;
-    }
+  const token = localStorage.getItem("token");
+  if (token) {
+    // Boşluk ve Bearer formatından emin oluyoruz
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
+}, (error) => {
+  return Promise.reject(error);
 });
 
-// 401 gelirse login sayfasına yönlendir
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 401 hatası gelirse hemen yönlendirme yapmasın, önce hatayı görelim
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("tokens");
-      localStorage.removeItem("user");
+      console.error("Yetki Hatası! Token geçersiz olabilir.");
+      
+      // Eğer zaten login sayfasındaysak temizlik yapma ki döngüye girmesin
       if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
+        
       }
     }
     return Promise.reject(error);
@@ -32,7 +32,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
-// ── Simülasyon: backend hazır olunca aşağıdaki 2 satırı sil ──
-import { installMockGroupApi } from "./mockGroupApi.js";
-installMockGroupApi(api);

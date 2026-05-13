@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 const menuItems = [
   { label: "Ana Sayfa", href: "/" },
   { label: "Panel", href: "/dashboard" },
+  { label: "Üniversiteler", href: "/universities" }, // Mevcut olan
+  { label: "Dönem Dersleri", href: "/term-lesson-list" }, // Yeni eklenen
   { label: "Gruplarım", href: "/groups" },
   { label: "Profilim", href: "/profile" },
   { label: "Ayarlar", href: "/settings" },
@@ -38,8 +40,9 @@ const Sidebar = () => {
               fontWeight={isActive ? "semibold" : "normal"}
               bg={isActive ? "teal.50" : "transparent"}
               color={isActive ? "teal.700" : "gray.700"}
-              _hover={{ bg: "teal.50", color: "teal.600" }}
+              _hover={{ bg: "teal.50", color: "teal.600", textDecoration: "none" }}
               textDecoration="none"
+              // Eğer react-router-dom Link'i gibi davranmasını istiyorsan gerekirse as={NavLink} eklenebilir
             >
               {item.label}
             </Link>

@@ -6,8 +6,9 @@ import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 
-// University list bileşenini import et
+// Bileşenleri import et
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
+import TermLessonTable from "./components/term-lesson-list/TermLessonTable.jsx"; // Yeni eklenen
 import Groups from "./pages/Groups.jsx";
 
 function App() {
@@ -44,8 +45,12 @@ function App() {
                         </Box>
                       }
                     />
-                    {/* Üniversite listesi rotasını ekle */}
+                    
+                    {/* Üniversite listesi rotası */}
                     <Route path="/universities" element={<UniversityTable />} />
+
+                    {/* Dönem Dersi Yönetimi rotası (Yeni Görev) */}
+                    <Route path="/term-lesson-list" element={<TermLessonTable />} />
 
                     <Route path="/groups" element={<Groups />} />
 

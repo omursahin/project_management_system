@@ -169,6 +169,11 @@ SIMPLE_JWT = {
 }
 
 # TODO: Change this when we get the frontend URL in the production
-CORS_ALLOWED_ORIGINS = ["http://localhost:8080"]
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://localhost:8080",
+]
 
 AUTH_USER_MODEL = "account.MyUser"
