@@ -1,3 +1,5 @@
+from rest_framework import serializers
+from .models import ProjectReport
 
 class ProjectReportSerializer(serializers.ModelSerializer):
     """Serializer for ProjectReport model with file upload support."""
