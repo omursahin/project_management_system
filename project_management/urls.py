@@ -67,7 +67,6 @@ urlpatterns = [
     path('api/group-project/', include('group_project.urls')),
     path('api/reports/', include('report.urls')),
     path('api/project-report/', include('project_report.urls')),
-    path('api/', include('project_report.urls')),
 ]
 
 # Static/media dosyalari catch-all'dan ONCE eklenmeli

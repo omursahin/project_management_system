@@ -24,16 +24,22 @@ export default function UploadReport() {
   const plagiarismRate = uploadedReports[0]?.plagiarism_rate || 0;
 
   const fetchReports = async () => {
-    try {
-      const response = await api.get("/api/project-report/");
-      setUploadedReports(response.data);
-      if (response.data.length > 0) {
-        setStatus("Teslim Edildi");
-      }
-    } catch (error) {
-      console.error("Raporlar alınamadı:", error.response?.data || error);
+  try {
+    const response = await api.get("/api/project-report/");
+
+    const reports = Array.isArray(response.data)
+      ? response.data
+      : response.data.results || [];
+
+    setUploadedReports(reports);
+
+    if (reports.length > 0) {
+      setStatus("Teslim Edildi");
     }
-  };
+  } catch (error) {
+    console.error("Raporlar alınamadı:", error.response?.data || error);
+  }
+};
 
   useEffect(() => {
     fetchReports();
@@ -49,6 +55,8 @@ export default function UploadReport() {
       setLoading(true);
 
       const formData = new FormData();
+      formData.append("project", 1);
+formData.append("report", 1);
       formData.append("description", description);
       formData.append("file", file);
       formData.append("is_submitted", "true");

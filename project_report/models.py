@@ -5,22 +5,25 @@ class ProjectReport(models.Model):
     project = models.ForeignKey(
         'group_project.GroupProject',
         on_delete=models.CASCADE,
-        related_name='project_reports',
-        null=True,
-        blank=True
+        related_name='project_reports'
     )
 
     report = models.ForeignKey(
         'report.Report',
         on_delete=models.CASCADE,
-        related_name='project_reports',
-        null=True,
+        related_name='project_reports'
+    )
+
+    description = models.CharField(
+        max_length=255,
         blank=True
     )
 
-    description = models.CharField(max_length=255, blank=True)
-
-    file = models.FileField(upload_to='project_reports/')
+    file = models.FileField(
+        upload_to='project_reports/',
+        blank=True,
+        null=True
+    )
 
     plagiarism_file = models.FileField(
         upload_to='plagiarism_reports/',
@@ -37,4 +40,4 @@ class ProjectReport(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Project Report #{self.id}"
+        return f"{self.project} - {self.report}"

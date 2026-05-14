@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import ProjectReport
 
+
 class ProjectReportSerializer(serializers.ModelSerializer):
     """Serializer for ProjectReport model with file upload support."""
     project_name = serializers.CharField(source='project.title', read_only=True)
@@ -44,5 +45,3 @@ class ProjectReportSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.plagiarism_file.url)
             return obj.plagiarism_file.url
         return None
-        fields = "__all__"
-        read_only_fields = ["project", "report"]
