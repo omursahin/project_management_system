@@ -78,6 +78,13 @@ export default function Home() {
           href="/universities"
           color="purple"
         />
+          <QuickActionCard
+          icon={"\u{1F4E4}"}
+          title="Rapor Yükle"
+          description="Proje raporunu sisteme yükle"
+          href="/upload-report"
+          color="orange"
+        />
       </Grid>
     </Box>
   );

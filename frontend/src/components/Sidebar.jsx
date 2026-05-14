@@ -14,6 +14,7 @@ const menuSections = [
     items: [
       { label: "Gruplarım", href: "/groups", icon: "\u2630" },
       { label: "Üniversiteler", href: "/universities", icon: "\u2302" },
+        { label: "Rapor Yükle", href: "/upload-report", icon: "\u{1F4E4}" },
     ],
   },
   {

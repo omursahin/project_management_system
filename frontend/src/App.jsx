@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
 import { isAuthenticated } from "./services/auth.js";
+import UploadReport from "./pages/Upload_Report";
 
 function PrivateRoute({ children }) {
   if (!isAuthenticated()) {
@@ -30,6 +31,7 @@ function AppLayout() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/universities" element={<UniversityTable />} />
             <Route path="/groups" element={<Groups />} />
+              <Route path="/upload-report" element={<UploadReport />} />
           </Routes>
         </Box>
       </Flex>
