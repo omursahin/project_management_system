@@ -57,6 +57,7 @@ export function createResource(key, path, opts = {}) {
 
   function useCreate(mutationOpts = {}) {
     const qc = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restMutationOpts } = mutationOpts;
     return useMutation({
       mutationFn: async (data) => {
         const res = await api.post(path, toServer(data));
@@ -64,14 +65,15 @@ export function createResource(key, path, opts = {}) {
       },
       onSuccess: (data, variables, ctx) => {
         qc.invalidateQueries({ queryKey: [key] });
-        mutationOpts.onSuccess?.(data, variables, ctx);
+        userOnSuccess?.(data, variables, ctx);
       },
-      ...mutationOpts,
+      ...restMutationOpts,
     });
   }
 
   function useUpdate(mutationOpts = {}) {
     const qc = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restMutationOpts } = mutationOpts;
     return useMutation({
       mutationFn: async ({ id, ...data }) => {
         const res = await api.put(`${path}${id}/`, toServer(data));
@@ -79,14 +81,15 @@ export function createResource(key, path, opts = {}) {
       },
       onSuccess: (data, variables, ctx) => {
         qc.invalidateQueries({ queryKey: [key] });
-        mutationOpts.onSuccess?.(data, variables, ctx);
+        userOnSuccess?.(data, variables, ctx);
       },
-      ...mutationOpts,
+      ...restMutationOpts,
     });
   }
 
   function usePatch(mutationOpts = {}) {
     const qc = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restMutationOpts } = mutationOpts;
     return useMutation({
       mutationFn: async ({ id, ...data }) => {
         const res = await api.patch(`${path}${id}/`, toServer(data));
@@ -94,21 +97,22 @@ export function createResource(key, path, opts = {}) {
       },
       onSuccess: (data, variables, ctx) => {
         qc.invalidateQueries({ queryKey: [key] });
-        mutationOpts.onSuccess?.(data, variables, ctx);
+        userOnSuccess?.(data, variables, ctx);
       },
-      ...mutationOpts,
+      ...restMutationOpts,
     });
   }
 
   function useDelete(mutationOpts = {}) {
     const qc = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restMutationOpts } = mutationOpts;
     return useMutation({
       mutationFn: (id) => api.delete(`${path}${id}/`),
       onSuccess: (data, variables, ctx) => {
         qc.invalidateQueries({ queryKey: [key] });
-        mutationOpts.onSuccess?.(data, variables, ctx);
+        userOnSuccess?.(data, variables, ctx);
       },
-      ...mutationOpts,
+      ...restMutationOpts,
     });
   }
 
@@ -119,6 +123,7 @@ export function createResource(key, path, opts = {}) {
    */
   function useAction(actionPath, { method = "post", invalidate = true, ...mutationOpts } = {}) {
     const qc = useQueryClient();
+    const { onSuccess: userOnSuccess, ...restMutationOpts } = mutationOpts;
     return useMutation({
       mutationFn: async ({ id, ...data } = {}) => {
         const url = id != null ? `${path}${id}/${actionPath}/` : `${path}${actionPath}/`;
@@ -127,9 +132,9 @@ export function createResource(key, path, opts = {}) {
       },
       onSuccess: (data, variables, ctx) => {
         if (invalidate) qc.invalidateQueries({ queryKey: [key] });
-        mutationOpts.onSuccess?.(data, variables, ctx);
+        userOnSuccess?.(data, variables, ctx);
       },
-      ...mutationOpts,
+      ...restMutationOpts,
     });
   }
 

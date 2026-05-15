@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { render } from "../test/test-utils";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/sidebar/UserSidebar.jsx";
 
 describe("Sidebar", () => {
   it("GENEL bölüm başlığını gösterir", () => {
