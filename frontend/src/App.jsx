@@ -12,6 +12,7 @@ import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { isAdmin, isCoordinator } from "./services/auth.js";
+import UploadReport from "./pages/Upload_Report";
 
 function App() {
   return (
@@ -58,6 +59,7 @@ function App() {
           <Route index element={<Home />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="groups" element={<Groups />} />
+            <Route path="upload-report" element={<UploadReport />} />
         </Route>
       </Routes>
     </Router>

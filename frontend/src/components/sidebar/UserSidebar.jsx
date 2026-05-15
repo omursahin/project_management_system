@@ -12,6 +12,7 @@ const menuSections = [
     label: "PROJE",
     items: [
       { label: "Gruplarım", href: "/groups", icon: "\u2630" },
+        { label: "Rapor Yükle", href: "/upload-report", icon: "📤" },
     ],
   },
   {
