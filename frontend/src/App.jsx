@@ -4,6 +4,10 @@ import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Groups from "./pages/Groups.jsx";
+// --- Senin Eklediğin Proje Sayfası ---
+import GroupProjectPage from "./components/group-project/GroupProjectPage.jsx";
+
+// --- Develop Dalından Gelen Yeni Paneller ve Yetkiler ---
 import UserLayout from "./components/layout/UserLayout.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import CoordinatorLayout from "./components/layout/CoordinatorLayout.jsx";
