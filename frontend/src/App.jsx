@@ -15,39 +15,8 @@ import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import { isAuthenticated, isAdmin, isCoordinator } from "./services/auth.js";
-
-
-function PrivateRoute({ children }) {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-  return children;
-}
-
-function AppLayout() {
-  return (
-    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
-      <Navbar />
-      <Flex flex="1">
-        <Sidebar />
-        <Box as="main" flex="1" p={{ base: 4, md: 6, lg: 8 }} maxW="1200px">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/universities" element={<UniversityTable />} />
-            <Route path="/groups" element={<Groups />} />
-            
-            {/* Senin Eklediğin Rota */}
-            <Route path="/group-projects" element={<GroupProjectPage />} />
-            
-          </Routes>
-        </Box>
-      </Flex>
-      <Footer />
-    </Box>
-  );
-}
+import { isAdmin, isCoordinator } from "./services/auth.js";
+import Lessons from "./pages/Lessons";
 
 function App() {
   return (
@@ -67,6 +36,7 @@ function App() {
           <Route path="universities" element={<AdminUniversitiesPage />} />
           <Route path="settings" element={<AdminPanel />} />
           <Route path="users" element={<AdminPanel />} />
+          <Route path="lessons" element={<Lessons />} />
         </Route>
 
 
@@ -80,7 +50,7 @@ function App() {
         >
           <Route index element={<CoordinatorPanel />} />
           <Route path="groups" element={<CoordinatorPanel />} />
-          <Route path="lessons" element={<CoordinatorPanel />} />
+          <Route path="lessons" element={<Lessons />} />
           <Route path="reports" element={<CoordinatorPanel />} />
         </Route>
         <Route
