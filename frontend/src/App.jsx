@@ -12,6 +12,7 @@ import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import { isAdmin, isCoordinator } from "./services/auth.js";
+import Lessons from "./pages/Lessons";
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="universities" element={<AdminUniversitiesPage />} />
           <Route path="settings" element={<AdminPanel />} />
           <Route path="users" element={<AdminPanel />} />
+          <Route path="lessons" element={<Lessons />} />
         </Route>
 
 
@@ -44,7 +46,7 @@ function App() {
         >
           <Route index element={<CoordinatorPanel />} />
           <Route path="groups" element={<CoordinatorPanel />} />
-          <Route path="lessons" element={<CoordinatorPanel />} />
+          <Route path="lessons" element={<Lessons />} />
           <Route path="reports" element={<CoordinatorPanel />} />
         </Route>
         <Route
