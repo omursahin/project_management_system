@@ -1,35 +1,6 @@
 import { Box, VStack, Link, Text, Separator } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
 
-<<<<<<< HEAD:frontend/src/components/Sidebar.jsx
-const menuSections = [
-  {
-    label: "GENEL",
-    items: [
-      { label: "Ana Sayfa", href: "/", icon: "\u2302" },
-      { label: "Panel", href: "/dashboard", icon: "\u25A6" },
-    ],
-  },
-  {
-    label: "PROJE",
-    items: [
-      {label: "Gruplarım", href: "/groups", icon: "\u2630"},
-      {label: "Üniversiteler", href: "/universities", icon: "\u2302"},
-      {label: "Not Girişi", href: "/not-girisi", icon: "\u270E"},
-    ],
-  },
-  {
-    label: "HESAP",
-    items: [
-      { label: "Profilim", href: "/profile", icon: "\u2603" },
-      { label: "Ayarlar", href: "/settings", icon: "\u2699" },
-    ],
-  },
-
-];
-
-const Sidebar = () => {
-=======
 /**
  * Generic sidebar component shared across all layout types.
  *
@@ -38,7 +9,6 @@ const Sidebar = () => {
  * @param {string} [props.activeColor="teal"] - Color token for active item styling
  */
 export default function BaseSidebar({ menuSections, activeColor = "teal" }) {
->>>>>>> develop:frontend/src/components/sidebar/BaseSidebar.jsx
   const location = useLocation();
 
   return (
