@@ -4,7 +4,7 @@ import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Groups from "./pages/Groups.jsx";
-import { isAuthenticated } from "./services/auth.js";
+import { isAuthenticated, isAdmin, isCoordinator } from "./services/auth.js";
 import NotGirisi from "./pages/NotGirisi.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
