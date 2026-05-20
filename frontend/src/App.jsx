@@ -12,7 +12,7 @@ import AdminLayout from "./components/layout/AdminLayout.jsx";
 import CoordinatorLayout from "./components/layout/CoordinatorLayout.jsx";
 
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
-import AdminUniversitiesPage from "./pages/admin/AdminUniversitiesPage.jsx";
+import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
 import Lessons from "./pages/Lessons.jsx";
 
