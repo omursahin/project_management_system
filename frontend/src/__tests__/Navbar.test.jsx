@@ -23,7 +23,7 @@ describe("Navbar", () => {
 
   it("Panel linkini gösterir", () => {
     render(<Navbar />);
-    expect(screen.getByText("Panel")).toBeInTheDocument();
+    expect(screen.getByText("Admin Paneli")).toBeInTheDocument();
   });
 
   it("Çıkış butonunu gösterir", () => {

@@ -1,13 +1,8 @@
-import { Flex, Box } from "@chakra-ui/react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import Sidebar from "./components/Sidebar.jsx";
-import Footer from "./components/Footer.jsx";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import UniversityTable from "./components/university-list/UniversityTable.jsx";
 import Groups from "./pages/Groups.jsx";
 import { isAuthenticated } from "./services/auth.js";
 import NotGirisi from "./pages/NotGirisi.jsx";
@@ -31,7 +26,6 @@ function AppLayout() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/universities" element={<UniversityTable />} />
             <Route path="/groups" element={<Groups />} />
-              <Route path="/not-girisi" element={<NotGirisi />} />
           </Routes>
         </Box>
       </Flex>
@@ -47,13 +41,47 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route
+          path="admin"
+          element={
+            <ProtectedRoute role={isAdmin}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminPanel />} />
+          <Route path="universities" element={<AdminUniversitiesPage />} />
+          <Route path="settings" element={<AdminPanel />} />
+          <Route path="users" element={<AdminPanel />} />
+          <Route path="lessons" element={<Lessons />} />
+        </Route>
+
+
+        <Route
+          path="coordinator"
+          element={
+            <ProtectedRoute role={isCoordinator}>
+              <CoordinatorLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<CoordinatorPanel />} />
+          <Route path="groups" element={<CoordinatorPanel />} />
+          <Route path="lessons" element={<Lessons />} />
+          <Route path="reports" element={<CoordinatorPanel />} />
+        </Route>
+        <Route
           path="/*"
           element={
-            <PrivateRoute>
-              <AppLayout />
-            </PrivateRoute>
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Home />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="groups" element={<Groups />} />
+            <Route path="not-girisi" element={<NotGirisi />} />
+        </Route>
       </Routes>
     </Router>
   );

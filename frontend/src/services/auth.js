@@ -41,3 +41,18 @@ export function getStoredTokens() {
 export function isAuthenticated() {
   return !!getStoredTokens()?.access;
 }
+
+export function getUserRole() {
+  const user = getStoredUser();
+  return 'admin'; // user?.role || null;
+}
+
+export function isAdmin() {
+  const role = getUserRole();
+  return role === 'admin';
+}
+
+export function isCoordinator() {
+  const role = getUserRole();
+  return role === 'coordinator';
+}

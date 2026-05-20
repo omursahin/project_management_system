@@ -1,6 +1,7 @@
-import { Box, VStack, Link, Text, Flex, Separator } from "@chakra-ui/react";
+import { Box, VStack, Link, Text, Separator } from "@chakra-ui/react";
 import { useLocation } from "react-router-dom";
 
+<<<<<<< HEAD:frontend/src/components/Sidebar.jsx
 const menuSections = [
   {
     label: "GENEL",
@@ -28,6 +29,16 @@ const menuSections = [
 ];
 
 const Sidebar = () => {
+=======
+/**
+ * Generic sidebar component shared across all layout types.
+ *
+ * @param {Object} props
+ * @param {Array}  props.menuSections - Array of { label, items: [{ label, href, icon }] }
+ * @param {string} [props.activeColor="teal"] - Color token for active item styling
+ */
+export default function BaseSidebar({ menuSections, activeColor = "teal" }) {
+>>>>>>> develop:frontend/src/components/sidebar/BaseSidebar.jsx
   const location = useLocation();
 
   return (
@@ -72,13 +83,13 @@ const Sidebar = () => {
                     borderRadius="lg"
                     fontSize="sm"
                     fontWeight={isActive ? "semibold" : "normal"}
-                    bg={isActive ? "teal.50" : "transparent"}
-                    color={isActive ? "teal.700" : "gray.600"}
+                    bg={isActive ? `${activeColor}.50` : "transparent"}
+                    color={isActive ? `${activeColor}.700` : "gray.600"}
                     borderLeft="3px solid"
-                    borderLeftColor={isActive ? "teal.500" : "transparent"}
+                    borderLeftColor={isActive ? `${activeColor}.500` : "transparent"}
                     _hover={{
-                      bg: isActive ? "teal.50" : "gray.50",
-                      color: isActive ? "teal.700" : "gray.800",
+                      bg: isActive ? `${activeColor}.50` : "gray.50",
+                      color: isActive ? `${activeColor}.700` : "gray.800",
                       textDecoration: "none",
                     }}
                     transition="all 0.15s"
@@ -96,6 +107,4 @@ const Sidebar = () => {
       </VStack>
     </Box>
   );
-};
-
-export default Sidebar;
+}
