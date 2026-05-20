@@ -4,19 +4,44 @@ import Register from "./pages/Register.jsx";
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Groups from "./pages/Groups.jsx";
-// --- Senin Eklediğin Proje Sayfası ---
-import GroupProjectPage from "./components/group-project/GroupProjectPage.jsx";
-
-// --- Develop Dalından Gelen Yeni Paneller ve Yetkiler ---
+import { isAuthenticated, isAdmin, isCoordinator } from "./services/auth.js";
+import NotGirisi from "./pages/NotGirisi.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import UserLayout from "./components/layout/UserLayout.jsx";
 import AdminLayout from "./components/layout/AdminLayout.jsx";
 import CoordinatorLayout from "./components/layout/CoordinatorLayout.jsx";
+
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
-import ProtectedRoute from "./components/ProtectedRoute.jsx";
-import { isAdmin, isCoordinator } from "./services/auth.js";
-import Lessons from "./pages/Lessons";
+import Lessons from "./pages/Lessons.jsx";
+
+function PrivateRoute({ children }) {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
+function AppLayout() {
+  return (
+    <Box minH="100vh" display="flex" flexDirection="column" bg="gray.50">
+      <Navbar />
+      <Flex flex="1">
+        <Sidebar />
+        <Box as="main" flex="1" p={{ base: 4, md: 6, lg: 8 }} maxW="1200px">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/universities" element={<UniversityTable />} />
+            <Route path="/groups" element={<Groups />} />
+          </Routes>
+        </Box>
+      </Flex>
+      <Footer />
+    </Box>
+  );
+}
 
 function App() {
   return (
@@ -64,10 +89,10 @@ function App() {
           <Route index element={<Home />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="groups" element={<Groups />} />
+            <Route path="not-girisi" element={<NotGirisi />} />
         </Route>
       </Routes>
     </Router>
   );
 }
-
 export default App;
