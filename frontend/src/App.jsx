@@ -7,6 +7,14 @@ import Groups from "./pages/Groups.jsx";
 import { isAuthenticated, isAdmin, isCoordinator } from "./services/auth.js";
 import NotGirisi from "./pages/NotGirisi.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import UserLayout from "./components/layout/UserLayout.jsx";
+import AdminLayout from "./components/layout/AdminLayout.jsx";
+import CoordinatorLayout from "./components/layout/CoordinatorLayout.jsx";
+
+import AdminPanel from "./pages/admin/AdminPanel.jsx";
+import AdminUniversitiesPage from "./pages/admin/AdminUniversitiesPage.jsx";
+import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
+import Lessons from "./pages/Lessons.jsx";
 
 function PrivateRoute({ children }) {
   if (!isAuthenticated()) {
