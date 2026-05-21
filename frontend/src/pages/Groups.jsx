@@ -11,11 +11,13 @@ import {
   Flex,
   Grid,
   Separator,
+  Select,
+  createListCollection,
 } from "@chakra-ui/react";
 import PageHeader from "../components/ui/PageHeader.jsx";
 import FormField from "../components/ui/FormField.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
-import { groups as groupsResource } from "../services/resources.js";
+import { groups as groupsResource, termLessons as termLessonsResource, groupMembers as groupMembersResource } from "../services/resources.js";
 
 /* ────────────────── Yardımcı: panoya kopyala ────────────────── */
 function useCopyToClipboard() {
@@ -39,13 +41,18 @@ function GroupCard({ group }) {
   const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
   const isOwner = group.owner === currentUser.id;
   const isCopied = copiedCode === group.invite_code;
+  const isMember = (group.members || []).some((m) => m.user === currentUser.id);
 
   // Üye listesini ihtiyaç olunca çek
   const { data: detail, isFetching: loadingMembers, refetch: fetchDetail } =
     groupsResource.useDetail(group.id, { enabled: false });
   const members = detail?.members || [];
 
-  const leaveAction = groupsResource.useAction("leave");
+  const deleteMembership = groupMembersResource.useDelete({
+    onSuccess: () => {
+      fetchDetail();
+    },
+  });
   const deleteMutation = groupsResource.useDelete();
 
   const toggleMembers = () => {
@@ -57,10 +64,15 @@ function GroupCard({ group }) {
 
   const handleLeave = () => {
     if (!window.confirm("Gruptan ayrılmak istediğine emin misin?")) return;
-    leaveAction.mutate(
-      { id: group.id },
-      { onError: () => alert("Gruptan ayrılırken bir hata oluştu.") }
-    );
+    const myMembership =
+      (detail?.members || group.members || []).find((m) => m.user === currentUser.id);
+    if (!myMembership) {
+      fetchDetail();
+      return;
+    }
+    deleteMembership.mutate(myMembership.id, {
+      onError: () => alert("Gruptan ayrılırken bir hata oluştu."),
+    });
   };
 
   const handleDelete = () => {
@@ -181,13 +193,13 @@ function GroupCard({ group }) {
           {expanded ? "Gizle" : "Üyeler"}
         </Button>
 
-        {group.is_member && !isOwner && (
+        {isMember && !isOwner && (
           <Button
             size="sm"
             variant="ghost"
             colorPalette="red"
             onClick={handleLeave}
-            loading={leaveAction.isPending}
+            loading={deleteMembership.isPending}
           >
             Ayrıl
           </Button>
@@ -216,6 +228,7 @@ function CreateGroupPanel({ onCreated, onCancel }) {
     name: "",
     description: "",
     max_members: 5,
+    term_lesson: "",
   });
   const [error, setError] = useState("");
 
@@ -232,6 +245,14 @@ function CreateGroupPanel({ onCreated, onCancel }) {
     },
   });
 
+  const { data: termLessons = [], isLoading: termLessonsLoading } =
+    termLessonsResource.useList();
+  const termLessonCollection = createListCollection({
+    items: termLessons,
+    itemToString: (i) => `${i.term} - ${i.lesson}`,
+    itemToValue: (i) => String(i.id),
+  });
+
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -242,11 +263,16 @@ function CreateGroupPanel({ onCreated, onCancel }) {
       setError("Grup adı zorunludur.");
       return;
     }
+    if (!form.term_lesson) {
+      setError("Dönem dersi seçimi zorunludur.");
+      return;
+    }
     setError("");
     createMutation.mutate({
       name: form.name.trim(),
       description: form.description.trim(),
       max_members: Number(form.max_members) || 5,
+      term_lesson: Number(form.term_lesson),
     });
   };
 
@@ -290,6 +316,33 @@ function CreateGroupPanel({ onCreated, onCancel }) {
             multiline
             rows={3}
           />
+          <Box>
+            <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={1}>
+              Dönem Dersi *
+            </Text>
+            <Select.Root
+              collection={termLessonCollection}
+              name="term_lesson"
+              value={form.term_lesson ? [form.term_lesson] : []}
+              onValueChange={(e) =>
+                setForm((prev) => ({ ...prev, term_lesson: e.value[0] ?? "" }))
+              }
+              disabled={createMutation.isPending || termLessonsLoading}
+            >
+              <Select.Trigger>
+                <Select.ValueText
+                  placeholder={termLessonsLoading ? "Yükleniyor..." : "Dönem dersi seçin"}
+                />
+              </Select.Trigger>
+              <Select.Content>
+                {termLessons.map((tl) => (
+                  <Select.Item key={tl.id} item={tl}>
+                    {tl.term} - {tl.lesson}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Box>
           <FormField
             label="Maksimum Üye Sayısı"
             name="max_members"
@@ -352,7 +405,7 @@ function JoinGroupPanel({ onJoined, onCancel }) {
       return;
     }
     setError("");
-    joinAction.mutate({ invite_code: trimmed });
+    joinAction.mutate({ invitation_code: trimmed });
   };
 
   return (

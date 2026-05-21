@@ -44,15 +44,16 @@ export function isAuthenticated() {
 
 export function getUserRole() {
   const user = getStoredUser();
-  return 'admin'; // user?.role || null;
+  if (!user) return "user";
+  if (user.is_superuser) return "admin";
+  if (user.is_staff) return "coordinator";
+  return "user";
 }
 
 export function isAdmin() {
-  const role = getUserRole();
-  return role === 'admin';
+  return getUserRole() === "admin";
 }
 
 export function isCoordinator() {
-  const role = getUserRole();
-  return role === 'coordinator';
+  return getUserRole() === "coordinator";
 }

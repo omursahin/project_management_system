@@ -9,7 +9,7 @@ const Lessons = () => {
 
   // Modal ve Form State'leri
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ id: null, code: "", title: "", description: "", department: "", owner: "" });
+  const [formData, setFormData] = useState({ id: null, code: "", title: "", description: "", department: "" });
 
   // 1. Dersleri API'den Çek (React Query)
   const { data: lessonsData, isLoading: isLoadingLessons } = useQuery({
@@ -17,13 +17,7 @@ const Lessons = () => {
     queryFn: () => api.get("/api/lesson/").then((res) => res.data)
   });
 
-  // 2. Kullanıcıları Çek (Ders Sahibi atamak için)
-  const { data: usersData } = useQuery({
-    queryKey: ["users"],
-    queryFn: () => api.get("/api/account/users/").then((res) => res.data)
-  });
-
-  // 3. Bölümleri API'den Çek (Filtreleme ve Form için)
+  // 2. Bölümleri API'den Çek (Filtreleme ve Form için)
   const { data: departmentsData } = useQuery({
     queryKey: ["departments"],
     queryFn: () => api.get("/api/department/").then((res) => res.data)
@@ -31,7 +25,6 @@ const Lessons = () => {
 
   // Django Rest Framework sayfalama yapıyorsa veriler .results içinde gelir, yapmıyorsa direkt gelir.
   const lessons = lessonsData?.results || lessonsData || [];
-  const users = usersData?.results || usersData || [];
   const departments = departmentsData?.results || departmentsData || [];
 
   // Ekleme / Güncelleme İstekleri (Mutation)
@@ -59,11 +52,10 @@ const Lessons = () => {
         code: lesson.code || "",
         title: lesson.title || "",
         description: lesson.description || "",
-        department: lesson.department?.id || lesson.department || "",
-        owner: lesson.owner?.id || lesson.owner || ""
+        department: lesson.department?.id || lesson.department || ""
       });
     } else {
-      setFormData({ id: null, code: "", title: "", description: "", department: "", owner: "" });
+      setFormData({ id: null, code: "", title: "", description: "", department: "" });
     }
     setIsModalOpen(true);
   };
@@ -115,7 +107,6 @@ const Lessons = () => {
                 <th style={{ padding: "12px 8px" }}>Ders Adı</th>
                 <th style={{ padding: "12px 8px" }}>Açıklama</th>
                 <th style={{ padding: "12px 8px" }}>Bölüm</th>
-                <th style={{ padding: "12px 8px" }}>Ders Sahibi</th>
                 <th style={{ padding: "12px 8px" }}>İşlemler</th>
               </tr>
             </thead>
@@ -132,11 +123,6 @@ const Lessons = () => {
                       <td style={{ padding: "12px 8px" }}>{lesson.title}</td>
                       <td style={{ padding: "12px 8px" }}>{lesson.description}</td>
                       <td style={{ padding: "12px 8px" }}>{deptName}</td>
-                      <td style={{ padding: "12px 8px" }}>
-                        {lesson.owner?.first_name
-                          ? `${lesson.owner.first_name} ${lesson.owner.last_name || ''}`
-                          : users.find(u => u.id === lesson.owner)?.first_name || "Atanmadı"}
-                      </td>
                       <td style={{ padding: "12px 8px" }}>
                         <Button onClick={() => openModal(lesson)} size="sm" variant="outline" color="blue.600" border="1px solid" borderColor="blue.200" px={3} py={1} borderRadius="md" _hover={{ bg: "blue.50" }}>
                           Düzenle
@@ -187,23 +173,6 @@ const Lessons = () => {
                     {departments.map(dept => (
                       <option key={dept.id} value={dept.id}>
                         {dept.name}
-                      </option>
-                    ))}
-                  </select>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" fontWeight="bold" mb={1} color="gray.600">Ders Sahibi</Text>
-                  <select
-                    required
-                    style={{ width: "100%", padding: "8px", borderRadius: "6px", border: "1px solid #E2E8F0", outline: "none" }}
-                    value={formData.owner}
-                    onChange={(e) => setFormData({...formData, owner: e.target.value})}
-                  >
-                    <option value="">Seçiniz...</option>
-                    {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.first_name} {user.last_name} ({user.email})
                       </option>
                     ))}
                   </select>
