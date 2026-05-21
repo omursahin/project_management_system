@@ -1,49 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { Box, Flex, Button, Input, useToast } from "@chakra-ui/react";
+import { Box, Flex, Button, Input } from "@chakra-ui/react";
 import axios from "axios";
 
 const NotGirisi = () => {
   const [students, setStudents] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const toast = useToast();
 
-  // API'nin çalıştığı temel adres (Gerekirse burayı kendi portuna göre düzelt)
   const BASE_URL = "http://127.0.0.1:8000/api";
 
-  // 1. ÖĞRENCİLERİ API'DEN ÇEKME
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        // Token'ı alıyoruz
         const token = localStorage.getItem("token");
 
         const response = await axios.get(`${BASE_URL}/term-lesson-student/?term_lesson=1`, {
           headers: {
-            Authorization: `Bearer ${token}` // Token yoksa bu kısmı silebilirsin
+            Authorization: `Bearer ${token}`
           }
         });
 
-        // Django REST Framework bazen verileri "results" içine koyar.
-        // Eğer data gelmezse response.data.results olarak değiştirebilirsin.
         setStudents(response.data.results || response.data);
       } catch (error) {
         console.error("Öğrenciler çekilirken hata oluştu:", error);
-        toast({
-          title: "Hata!",
-          description: "Öğrenciler yüklenemedi.",
-          status: "error",
-          duration: 3000,
-          isClosable: true,
-        });
+        alert("Hata! Öğrenciler yüklenemedi.");
       }
     };
 
     fetchStudents();
-  }, [toast]);
+  }, []);
 
-  // 2. KUTUCUKLARA NOT GİRİLDİKÇE STATE'İ GÜNCELLEME
   const handleGradeChange = (id, field, value) => {
-    // Input'tan gelen değer string olur, onu sayıya çeviriyoruz (boşsa null)
     const numValue = value === "" ? null : Number(value);
 
     setStudents((prevStudents) =>
@@ -53,13 +39,11 @@ const NotGirisi = () => {
     );
   };
 
-  // 3. KAYDET BUTONUNA BASILINCA (API'YE PATCH ATMA)
   const handleSave = async () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem("token");
 
-      // Bütün öğrencilerin notlarını aynı anda güncelliyoruz
       const promises = students.map((student) =>
         axios.patch(
           `${BASE_URL}/term-lesson-student/${student.id}/`,
@@ -78,24 +62,11 @@ const NotGirisi = () => {
 
       await Promise.all(promises);
 
-      toast({
-        title: "Harika!",
-        description: "Notlar başarıyla sisteme kaydedildi. 🚀",
-        status: "success",
-        duration: 3000,
-        isClosable: true,
-        position: "top-right"
-      });
+      alert("Harika! Notlar başarıyla sisteme kaydedildi. 🚀");
 
     } catch (error) {
       console.error("Kaydetme hatası:", error);
-      toast({
-        title: "Hata!",
-        description: "Notlar kaydedilirken bir sorun oluştu.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
+      alert("Hata! Notlar kaydedilirken bir sorun oluştu.");
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +94,6 @@ const NotGirisi = () => {
             ) : (
               students.map((student) => (
                 <tr key={student.id} style={{ borderBottom: "1px solid #EDF2F7" }}>
-                  {/* Backend'den öğrenci adı nasıl geliyorsa burayı ona göre uyarla */}
                   <td style={{ padding: "12px", fontWeight: "500" }}>
                     {student.student?.first_name} {student.student?.last_name}
                     {!student.student && `Öğrenci ID: ${student.student_id}`}
@@ -159,7 +129,6 @@ const NotGirisi = () => {
         </table>
       </Box>
 
-      {/* Kaydet Butonları */}
       <Flex justify="flex-end" mt={6}>
         <Button colorScheme="blue" size="md" onClick={handleSave} isLoading={isLoading} loadingText="Kaydediliyor...">
           Notları Kaydet
