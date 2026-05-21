@@ -2,11 +2,17 @@ import BaseSidebar from "./BaseSidebar.jsx";
 
 const menuSections = [
   {
-    label: "KOORDINASYON",
+    label: "GENEL",
     items: [
-      { label: "Gruplarım", href: "/coordinator/groups", icon: "\u2630" },
-      { label: "Ders Yönetimi", href: "/coordinator/lessons", icon: "\u{1F393}" },
-      { label: "Raporlar", href: "/coordinator/reports", icon: "\u{1F4CA}" },
+      { label: "Ana Sayfa", href: "/instructor", icon: "⌂" },
+      { label: "Derslerim", href: "/instructor/lessons", icon: "\u{1F393}" },
+    ],
+  },
+  {
+    label: "HESAP",
+    items: [
+      { label: "Profilim", href: "/instructor/profile", icon: "☃" },
+      { label: "Ayarlar", href: "/instructor/settings", icon: "⚙" },
     ],
   },
 ];

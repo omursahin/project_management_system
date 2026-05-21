@@ -9,11 +9,6 @@ describe("Sidebar", () => {
     expect(screen.getByText("GENEL")).toBeInTheDocument();
   });
 
-  it("PROJE bölüm başlığını gösterir", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("PROJE")).toBeInTheDocument();
-  });
-
   it("HESAP bölüm başlığını gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("HESAP")).toBeInTheDocument();
@@ -24,14 +19,24 @@ describe("Sidebar", () => {
     expect(screen.getByText("Ana Sayfa")).toBeInTheDocument();
   });
 
-  it("Gruplarım linkini gösterir", () => {
+  it("Derslerim linkini gösterir", () => {
     render(<Sidebar />);
-    expect(screen.getByText("Gruplarım")).toBeInTheDocument();
+    expect(screen.getByText("Derslerim")).toBeInTheDocument();
   });
 
   it("Profilim linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Profilim")).toBeInTheDocument();
+  });
+
+  it("Ayarlar linkini gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("Ayarlar")).toBeInTheDocument();
+  });
+
+  it("Gruplarim linkini kaldirildi - artik sidebarda gosterilmemeli", () => {
+    render(<Sidebar />);
+    expect(screen.queryByText("Gruplarım")).not.toBeInTheDocument();
   });
 
   it("aside elementi olarak render eder", () => {

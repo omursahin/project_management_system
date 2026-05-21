@@ -4,21 +4,15 @@ const menuSections = [
   {
     label: "GENEL",
     items: [
-      { label: "Ana Sayfa", href: "/", icon: "\u2302" },
-      { label: "Panel", href: "/dashboard", icon: "\u25A6" },
-    ],
-  },
-  {
-    label: "PROJE",
-    items: [
-      { label: "Gruplarım", href: "/groups", icon: "\u2630" },
+      { label: "Ana Sayfa", href: "/", icon: "⌂" },
+      { label: "Derslerim", href: "/lessons", icon: "\u{1F393}" },
     ],
   },
   {
     label: "HESAP",
     items: [
-      { label: "Profilim", href: "/profile", icon: "\u2603" },
-      { label: "Ayarlar", href: "/settings", icon: "\u2699" },
+      { label: "Profilim", href: "/profile", icon: "☃" },
+      { label: "Ayarlar", href: "/settings", icon: "⚙" },
     ],
   },
 ];

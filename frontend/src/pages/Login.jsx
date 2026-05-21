@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Box, Button, VStack, Text, Link, Alert } from "@chakra-ui/react";
-import { authApi, saveAuth } from "../services/auth.js";
+import { authApi, saveAuth, getUserRole } from "../services/auth.js";
 import AuthLayout from "../components/ui/AuthLayout.jsx";
 import FormField from "../components/ui/FormField.jsx";
 
@@ -15,7 +15,10 @@ function Login() {
     mutationFn: (payload) => authApi.login(payload),
     onSuccess: (data) => {
       saveAuth(data);
-      navigate("/");
+      const role = getUserRole();
+      if (role === "admin") navigate("/admin");
+      else if (role === "instructor") navigate("/instructor");
+      else navigate("/");
     },
     onError: (error) => {
       const resp = error.response?.data;

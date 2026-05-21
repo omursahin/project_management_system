@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  Table, Box, Badge, Button, Text, VStack, Input,
-  DialogRoot, DialogContent, DialogHeader, DialogBody,
-  DialogTitle, DialogCloseTrigger, HStack, Spinner, Alert,
+  Table, Box, Badge, Button, Text, VStack,
+  HStack, Spinner, Alert,
 } from "@chakra-ui/react";
 import PageHeader from "../ui/PageHeader.jsx";
 import FormField from "../ui/FormField.jsx";
+import Modal from "../ui/Modal.jsx";
 import { universities } from "../../services/resources.js";
 
 const EMPTY_FORM = { id: null, name: "", city: "", type: "Devlet", detail: "" };
@@ -149,90 +149,66 @@ const UniversityTable = () => {
       </Box>
 
       {/* Detay Diyalogu */}
-      <DialogRoot open={!!selectedUni} onOpenChange={(e) => !e.open && setSelectedUni(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{selectedUni?.name}</DialogTitle></DialogHeader>
-          <DialogBody pb={6}>
-            <VStack align="start" gap={3}>
-              <Text><strong>Şehir:</strong> {selectedUni?.city}</Text>
-              <Text><strong>Tür:</strong> {selectedUni?.type}</Text>
-              <Text><strong>Hakkında:</strong> {selectedUni?.detail}</Text>
-            </VStack>
-          </DialogBody>
-          <DialogCloseTrigger />
-        </DialogContent>
-      </DialogRoot>
+      <Modal open={!!selectedUni} onClose={() => setSelectedUni(null)} title={selectedUni?.name}>
+        <VStack align="start" gap={3}>
+          <Text><strong>Şehir:</strong> {selectedUni?.city}</Text>
+          <Text><strong>Tür:</strong> {selectedUni?.type}</Text>
+          <Text><strong>Hakkında:</strong> {selectedUni?.detail}</Text>
+        </VStack>
+      </Modal>
 
       {/* Ekleme/Duzenleme Formu */}
-      <DialogRoot open={isFormOpen} onOpenChange={(e) => setIsFormOpen(e.open)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{formData.id ? "Üniversiteyi Düzenle" : "Yeni Üniversite Ekle"}</DialogTitle>
-          </DialogHeader>
-          <DialogBody pb={6}>
-            <VStack gap={4} align="stretch">
-              <FormField
-                label="Üniversite Adı"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
-              <FormField
-                label="Şehir"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-              />
-              <FormField
-                label="Hakkında"
-                multiline
-                rows={3}
-                value={formData.detail}
-                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
-              />
-              <HStack justify="end" pt={2}>
-                <Button variant="ghost" onClick={() => setIsFormOpen(false)}>
-                  Vazgeç
-                </Button>
-                <Button
-                  bg="teal.500"
-                  color="white"
-                  _hover={{ bg: "teal.600" }}
-                  loading={isSaving}
-                  onClick={handleSave}
-                >
-                  Kaydet
-                </Button>
-              </HStack>
-            </VStack>
-          </DialogBody>
-          <DialogCloseTrigger />
-        </DialogContent>
-      </DialogRoot>
+      <Modal
+        open={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={formData.id ? "Üniversiteyi Düzenle" : "Yeni Üniversite Ekle"}
+      >
+        <VStack gap={4} align="stretch">
+          <FormField
+            label="Üniversite Adı"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
+          <FormField
+            label="Şehir"
+            value={formData.city}
+            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+          />
+          <FormField
+            label="Hakkında"
+            multiline
+            rows={3}
+            value={formData.detail}
+            onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+          />
+          <HStack justify="end" pt={2}>
+            <Button variant="ghost" onClick={() => setIsFormOpen(false)}>Vazgeç</Button>
+            <Button
+              bg="teal.500"
+              color="white"
+              _hover={{ bg: "teal.600" }}
+              loading={isSaving}
+              onClick={handleSave}
+            >
+              Kaydet
+            </Button>
+          </HStack>
+        </VStack>
+      </Modal>
 
       {/* Silme Onayi */}
-      <DialogRoot open={!!deleteUni} onOpenChange={(e) => !e.open && setDeleteUni(null)}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Silmeyi Onayla</DialogTitle></DialogHeader>
-          <DialogBody pb={6}>
-            <Text>
-              <strong>{deleteUni?.name}</strong> üniversitesini silmek istediğinize emin misiniz?
-              Bu işlem geri alınamaz.
-            </Text>
-            <HStack justify="end" pt={4}>
-              <Button variant="ghost" onClick={() => setDeleteUni(null)}>
-                Vazgeç
-              </Button>
-              <Button
-                colorPalette="red"
-                loading={deleteMutation.isPending}
-                onClick={handleDelete}
-              >
-                Sil
-              </Button>
-            </HStack>
-          </DialogBody>
-          <DialogCloseTrigger />
-        </DialogContent>
-      </DialogRoot>
+      <Modal open={!!deleteUni} onClose={() => setDeleteUni(null)} title="Silmeyi Onayla" size="sm">
+        <Text>
+          <strong>{deleteUni?.name}</strong> üniversitesini silmek istediğinize emin misiniz?
+          Bu işlem geri alınamaz.
+        </Text>
+        <HStack justify="end" pt={4}>
+          <Button variant="ghost" onClick={() => setDeleteUni(null)}>Vazgeç</Button>
+          <Button colorPalette="red" loading={deleteMutation.isPending} onClick={handleDelete}>
+            Sil
+          </Button>
+        </HStack>
+      </Modal>
     </Box>
   );
 };

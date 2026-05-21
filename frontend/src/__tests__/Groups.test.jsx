@@ -16,32 +16,38 @@ import api from "../services/api.js";
 const mockGroups = [
   {
     id: 1,
-    name: "Alpha Takımı",
+    title: "Alpha Takımı",
     description: "İlk proje grubu",
-    invite_code: "ABC12345",
-    max_members: 5,
-    member_count: 3,
+    invitation_code: "ABC12345",
+    max_size: 5,
     owner: 1,
-    owner_name: "Test User",
-    is_member: true,
-    created_at: "2026-03-01T10:00:00Z",
+    term_lesson: 1,
+    status: "active",
+    memberships: [
+      { id: 10, user: 1, user_email: "lead@x.com", user_name: "Lead", status: "accepted" },
+      { id: 11, user: 2, user_email: "m1@x.com", user_name: "M1", status: "accepted" },
+      { id: 12, user: 3, user_email: "m2@x.com", user_name: "M2", status: "accepted" },
+    ],
   },
 ];
 
 beforeEach(() => {
   localStorage.setItem("user", JSON.stringify({ id: 1 }));
   vi.clearAllMocks();
+  api.get.mockImplementation((url) => {
+    if (url === "/api/group/") return Promise.resolve({ data: [] });
+    if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+    return Promise.resolve({ data: [] });
+  });
 });
 
 describe("Groups", () => {
   it("Gruplarım başlığını gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
     render(<Groups />);
     expect(screen.getByRole("heading", { name: /Gruplarım/i })).toBeInTheDocument();
   });
 
   it("grup yoksa boş durum mesajını gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByText(/Henüz bir grubun yok/i)).toBeInTheDocument();
@@ -49,7 +55,6 @@ describe("Groups", () => {
   });
 
   it("boş durumda Grup Oluştur butonunu gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Grup Oluştur/i })).toBeInTheDocument();
@@ -57,7 +62,6 @@ describe("Groups", () => {
   });
 
   it("boş durumda Davet Koduyla Katıl butonunu gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: [] });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Davet Koduyla Katıl/i })).toBeInTheDocument();
@@ -65,7 +69,11 @@ describe("Groups", () => {
   });
 
   it("grupları kart olarak listeler", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByText("Alpha Takımı")).toBeInTheDocument();
@@ -73,7 +81,11 @@ describe("Groups", () => {
   });
 
   it("davet kodunu gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByText("ABC12345")).toBeInTheDocument();
@@ -81,31 +93,51 @@ describe("Groups", () => {
   });
 
   it("üye sayısını gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByText("3/5")).toBeInTheDocument();
     });
   });
 
-  it("Yeni Grup butonuna tıklayınca form açılır", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+  it("Yeni Grup butonuna tıklayınca dialog açılır", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => screen.getByText("Alpha Takımı"));
     fireEvent.click(screen.getByRole("button", { name: /Yeni Grup/i }));
-    expect(screen.getByRole("heading", { name: /Yeni Grup Oluştur/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Maksimum Üye Sayısı/i)).toBeInTheDocument();
+    });
   });
 
-  it("Davet Koduyla Katıl butonuna tıklayınca form açılır", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+  it("Davet Koduyla Katıl butonuna tıklayınca dialog açılır", async () => {
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => screen.getByText("Alpha Takımı"));
     fireEvent.click(screen.getByRole("button", { name: /Davet Koduyla Katıl/i }));
-    expect(screen.getByRole("heading", { name: /Gruba Katıl/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Grup liderinden aldığın/i)).toBeInTheDocument();
+    });
   });
 
   it("Kopyala butonunu gösterir", async () => {
-    api.get.mockResolvedValueOnce({ data: mockGroups });
+    api.get.mockImplementation((url) => {
+      if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
+      if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
+      return Promise.resolve({ data: [] });
+    });
     render(<Groups />);
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Kopyala/i })).toBeInTheDocument();

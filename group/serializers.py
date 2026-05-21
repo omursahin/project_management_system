@@ -31,4 +31,13 @@ class GroupSerializer(serializers.ModelSerializer):
         # Grubu oluşturan kişiyi (request.user) owner olarak atıyoruz
         request = self.context.get('request')
         validated_data['owner'] = request.user
-        return super().create(validated_data)
+        group = super().create(validated_data)
+
+        # Owner'i ACCEPTED uye olarak ekle - boylece member listesinde ve
+        # member_count'ta gorunsun, lider de "uye degilim" sanmasin
+        GroupMember.objects.create(
+            group=group,
+            user=request.user,
+            status=GroupMember.Status.ACCEPTED,
+        )
+        return group
