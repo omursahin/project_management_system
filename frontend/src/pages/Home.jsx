@@ -49,6 +49,34 @@ export default function Home() {
         borderRadius="xl"
         p={6}
       >
+        <QuickActionCard
+          icon={"\u{1F4CB}"}
+          title="Gruplarım"
+          description="Proje gruplarınızı görüntüleyip yönetin"
+          href="/groups"
+        />
+        <QuickActionCard
+          icon={"\u{1F4CA}"}
+          title="Panel"
+          description="İstatistikler ve özet bilgiler"
+          href="/dashboard"
+          color="blue"
+        />
+        <QuickActionCard
+          icon={"\u{1F3EB}"}
+          title="Üniversiteler"
+          description="Üniversite bilgilerini inceleyin"
+          href="/universities"
+          color="purple"
+        />
+          <QuickActionCard
+          icon={"\u{1F4E4}"}
+          title="Rapor Yükle"
+          description="Proje raporunu sisteme yükle"
+          href="/upload-report"
+          color="orange"
+        />
+      </Grid>
         <Heading size="md" color="gray.700" mb={3}>Nasıl çalışır?</Heading>
         <Text fontSize="sm" color="gray.600" lineHeight="taller">
           1. <strong>Derslerim</strong> bölümünden kayıtlı olduğun dersleri görürsün.<br />

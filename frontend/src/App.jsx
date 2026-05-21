@@ -20,6 +20,10 @@ import TermLessonsPage from "./pages/admin/TermLessonsPage.jsx";
 import StudentAssignmentsPage from "./pages/admin/StudentAssignmentsPage.jsx";
 import UsersPage from "./pages/admin/UsersPage.jsx";
 import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { isAdmin, isCoordinator } from "./services/auth.js";
+import UploadReport from "./pages/Upload_Report";
+import Lessons from "./pages/Lessons";
 import InstructorHome from "./pages/instructor/InstructorHome.jsx";
 import MyTermLessonsPage from "./pages/instructor/MyTermLessonsPage.jsx";
 import InstructorLessonDetailPage from "./pages/instructor/InstructorLessonDetailPage.jsx";
@@ -85,6 +89,7 @@ function App() {
           <Route path="lessons" element={<StudentLessonsPage />} />
           <Route path="lessons/:id" element={<StudentLessonDetailPage />} />
           <Route path="groups" element={<Groups />} />
+            <Route path="upload-report" element={<UploadReport />} />
           <Route path="group-projects" element={<GroupProjectPage />} />
         </Route>
       </Routes>
