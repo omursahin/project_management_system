@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { authApi, clearAuth, getStoredTokens, getStoredUser } from "../services/auth.js";
 
-import { isAdmin, isCoordinator } from "../services/auth.js";
+import { isAdmin, isInstructor } from "../services/auth.js";
 
 function UserAvatar({ user }) {
   const initials = user
@@ -89,15 +89,15 @@ const Navbar = () => {
             Admin Paneli
           </Link>
         )}
-        {isCoordinator() && (
+        {isInstructor() && (
           <Link
-            href="/coordinator"
+            href="/instructor"
             fontSize="sm"
             opacity={0.9}
             _hover={{ opacity: 1, textDecoration: "none" }}
             display={{ base: "none", md: "inline" }}
           >
-            Koordinatör Paneli
+            Eğitmen Paneli
           </Link>
         )}
 

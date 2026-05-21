@@ -21,11 +21,14 @@ class TermLessonViewSet(viewsets.ModelViewSet):
         # Örnek: /api/term-lesson/?term=1&lesson=5
         term_id = self.request.query_params.get('term')
         lesson_id = self.request.query_params.get('lesson')
+        instructor_id = self.request.query_params.get('instructor')
 
         # Eğer parametre gönderilmişse listeyi ona göre filtrele
         if term_id:
             queryset = queryset.filter(term_id=term_id)
         if lesson_id:
             queryset = queryset.filter(lesson_id=lesson_id)
+        if instructor_id:
+            queryset = queryset.filter(instructor_id=instructor_id)
 
         return queryset

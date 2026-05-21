@@ -81,8 +81,8 @@ fi\n\
 echo "Running migrations..."\n\
 python manage.py migrate --noinput\n\
 \n\
-echo "Seeding default admin user..."\n\
-python manage.py seed_admin\n\
+echo "Seeding default users (admin, egitmen, ogrenci)..."\n\
+python manage.py seed_default_users\n\
 \n\
 echo "Collecting static files..."\n\
 python manage.py collectstatic --noinput --clear || true\n\

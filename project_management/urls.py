@@ -39,13 +39,15 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    # Django admin, frontend /admin rotasi ile cakismamasi icin /django-admin/ altinda
+    path("django-admin/", admin.site.urls),
     path("api/v1/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/v1/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/v1/token/verify/", TokenVerifyView.as_view(), name="token_verify"),
     path("api/account/", include("account.urls")),
     path("api/term/", include("term.urls")),
     path("api/department/", include("department.urls")),
+    path("api/faculty/", include("faculty.urls")),
     path("api/lesson/", include("lesson.urls")),
     path("api/university/", include("university.urls")),
     path("api/group/", include("group.urls")),
