@@ -34,11 +34,16 @@ class GroupProjectViewSet(viewsets.ModelViewSet):
         """Filter queryset based on query parameters."""
         queryset = GroupProject.objects.all()
         
+        # Filter by group
+        group_id = self.request.query_params.get('group', None)
+        if group_id:
+            queryset = queryset.filter(group_id=group_id)
+
         # Filter by group owner
         group_owner = self.request.query_params.get('group_owner', None)
         if group_owner:
             queryset = queryset.filter(group__owner_id=group_owner)
-        
+
         # Filter by term lesson (via group)
         term_lesson = self.request.query_params.get('term_lesson', None)
         if term_lesson:
