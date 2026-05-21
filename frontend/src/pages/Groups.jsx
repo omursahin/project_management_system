@@ -11,12 +11,11 @@ import {
   Flex,
   Grid,
   Separator,
-  Select,
-  createListCollection,
 } from "@chakra-ui/react";
 import PageHeader from "../components/ui/PageHeader.jsx";
 import FormField from "../components/ui/FormField.jsx";
 import EmptyState from "../components/ui/EmptyState.jsx";
+import Modal from "../components/ui/Modal.jsx";
 import { groups as groupsResource, termLessons as termLessonsResource, groupMembers as groupMembersResource } from "../services/resources.js";
 
 /* ────────────────── Yardımcı: panoya kopyala ────────────────── */
@@ -222,8 +221,8 @@ function GroupCard({ group }) {
   );
 }
 
-/* ═══════════════════ YENİ GRUP FORMU ═══════════════════ */
-function CreateGroupPanel({ onCreated, onCancel }) {
+/* ═══════════════════ YENİ GRUP DIALOG ═══════════════════ */
+function CreateGroupDialog({ open, onClose }) {
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -233,7 +232,11 @@ function CreateGroupPanel({ onCreated, onCancel }) {
   const [error, setError] = useState("");
 
   const createMutation = groupsResource.useCreate({
-    onSuccess: onCreated,
+    onSuccess: () => {
+      setForm({ name: "", description: "", max_members: 5, term_lesson: "" });
+      setError("");
+      onClose();
+    },
     onError: (err) => {
       const data = err.response?.data;
       if (data) {
@@ -247,11 +250,11 @@ function CreateGroupPanel({ onCreated, onCancel }) {
 
   const { data: termLessons = [], isLoading: termLessonsLoading } =
     termLessonsResource.useList();
-  const termLessonCollection = createListCollection({
-    items: termLessons,
-    itemToString: (i) => `${i.term} - ${i.lesson}`,
-    itemToValue: (i) => String(i.id),
-  });
+
+  const termLessonOptions = termLessons.map((tl) => ({
+    value: tl.id,
+    label: `${tl.term} - ${tl.lesson}`,
+  }));
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -259,14 +262,8 @@ function CreateGroupPanel({ onCreated, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!form.name.trim()) {
-      setError("Grup adı zorunludur.");
-      return;
-    }
-    if (!form.term_lesson) {
-      setError("Dönem dersi seçimi zorunludur.");
-      return;
-    }
+    if (!form.name.trim()) { setError("Grup adı zorunludur."); return; }
+    if (!form.term_lesson) { setError("Dönem dersi seçimi zorunludur."); return; }
     setError("");
     createMutation.mutate({
       name: form.name.trim(),
@@ -277,25 +274,13 @@ function CreateGroupPanel({ onCreated, onCancel }) {
   };
 
   return (
-    <Box
-      border="1px solid"
-      borderColor="teal.200"
-      borderRadius="xl"
-      p={6}
-      bg="white"
-      shadow="sm"
-    >
-      <Heading size="md" color="teal.700" mb={4}>
-        Yeni Grup Oluştur
-      </Heading>
-
+    <Modal open={open} onClose={onClose} title="Yeni Grup Oluştur">
       {error && (
         <Alert.Root status="error" mb={4} borderRadius="lg">
           <Alert.Indicator />
           <Alert.Title fontSize="sm">{error}</Alert.Title>
         </Alert.Root>
       )}
-
       <form onSubmit={handleSubmit}>
         <VStack gap={4} align="stretch">
           <FormField
@@ -316,33 +301,15 @@ function CreateGroupPanel({ onCreated, onCancel }) {
             multiline
             rows={3}
           />
-          <Box>
-            <Text fontSize="sm" fontWeight="medium" color="gray.600" mb={1}>
-              Dönem Dersi *
-            </Text>
-            <Select.Root
-              collection={termLessonCollection}
-              name="term_lesson"
-              value={form.term_lesson ? [form.term_lesson] : []}
-              onValueChange={(e) =>
-                setForm((prev) => ({ ...prev, term_lesson: e.value[0] ?? "" }))
-              }
-              disabled={createMutation.isPending || termLessonsLoading}
-            >
-              <Select.Trigger>
-                <Select.ValueText
-                  placeholder={termLessonsLoading ? "Yükleniyor..." : "Dönem dersi seçin"}
-                />
-              </Select.Trigger>
-              <Select.Content>
-                {termLessons.map((tl) => (
-                  <Select.Item key={tl.id} item={tl}>
-                    {tl.term} - {tl.lesson}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </Box>
+          <FormField
+            label="Dönem Dersi *"
+            name="term_lesson"
+            options={termLessonOptions}
+            placeholder={termLessonsLoading ? "Yükleniyor..." : "Dönem dersi seçin"}
+            value={form.term_lesson}
+            onChange={(e) => setForm((prev) => ({ ...prev, term_lesson: e.target.value }))}
+            disabled={createMutation.isPending || termLessonsLoading}
+          />
           <FormField
             label="Maksimum Üye Sayısı"
             name="max_members"
@@ -352,9 +319,11 @@ function CreateGroupPanel({ onCreated, onCancel }) {
             value={form.max_members}
             onChange={handleChange}
             disabled={createMutation.isPending}
-            w="120px"
           />
-          <Flex gap={3} pt={2}>
+          <HStack justify="end" pt={2}>
+            <Button variant="ghost" onClick={onClose} disabled={createMutation.isPending}>
+              İptal
+            </Button>
             <Button
               type="submit"
               bg="teal.500"
@@ -364,23 +333,20 @@ function CreateGroupPanel({ onCreated, onCancel }) {
             >
               Oluştur
             </Button>
-            <Button variant="ghost" onClick={onCancel} disabled={createMutation.isPending}>
-              İptal
-            </Button>
-          </Flex>
+          </HStack>
         </VStack>
       </form>
-    </Box>
+    </Modal>
   );
 }
 
-/* ═══════════════════ GRUBA KATIL FORMU ═══════════════════ */
-function JoinGroupPanel({ onJoined, onCancel }) {
+/* ═══════════════════ GRUBA KATIL DIALOG ═══════════════════ */
+function JoinGroupDialog({ open, onClose }) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
   const joinAction = groupsResource.useAction("join", {
-    onSuccess: onJoined,
+    onSuccess: () => { setCode(""); setError(""); onClose(); },
     onError: (err) => {
       const data = err.response?.data;
       if (err.response?.status === 404) {
@@ -400,34 +366,19 @@ function JoinGroupPanel({ onJoined, onCancel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const trimmed = code.trim().toUpperCase();
-    if (!trimmed) {
-      setError("Davet kodu zorunludur.");
-      return;
-    }
+    if (!trimmed) { setError("Davet kodu zorunludur."); return; }
     setError("");
     joinAction.mutate({ invitation_code: trimmed });
   };
 
   return (
-    <Box
-      border="1px solid"
-      borderColor="blue.200"
-      borderRadius="xl"
-      p={6}
-      bg="white"
-      shadow="sm"
-    >
-      <Heading size="md" color="blue.700" mb={4}>
-        Gruba Katıl
-      </Heading>
-
+    <Modal open={open} onClose={onClose} title="Davet Koduyla Katıl">
       {error && (
         <Alert.Root status="error" mb={4} borderRadius="lg">
           <Alert.Indicator />
           <Alert.Title fontSize="sm">{error}</Alert.Title>
         </Alert.Root>
       )}
-
       <form onSubmit={handleSubmit}>
         <VStack gap={4} align="stretch">
           <Box>
@@ -447,7 +398,10 @@ function JoinGroupPanel({ onJoined, onCancel }) {
               Grup liderinden aldığın 8 haneli kodu gir.
             </Text>
           </Box>
-          <Flex gap={3} pt={2}>
+          <HStack justify="end" pt={2}>
+            <Button variant="ghost" onClick={onClose} disabled={joinAction.isPending}>
+              İptal
+            </Button>
             <Button
               type="submit"
               bg="blue.500"
@@ -457,19 +411,17 @@ function JoinGroupPanel({ onJoined, onCancel }) {
             >
               Katıl
             </Button>
-            <Button variant="ghost" onClick={onCancel} disabled={joinAction.isPending}>
-              İptal
-            </Button>
-          </Flex>
+          </HStack>
         </VStack>
       </form>
-    </Box>
+    </Modal>
   );
 }
 
 /* ═══════════════════ ANA SAYFA ═══════════════════ */
 export default function Groups() {
-  const [activePanel, setActivePanel] = useState(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const { data: list = [], isLoading, error } = groupsResource.useList();
 
   return (
@@ -478,12 +430,12 @@ export default function Groups() {
         title="Gruplarım"
         subtitle="Proje gruplarınızı yönetin, yeni grup oluşturun veya mevcut bir gruba katılın."
       >
-        {list.length > 0 && !activePanel && (
+        {list.length > 0 && (
           <>
-            <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setActivePanel("create")}>
+            <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setShowCreate(true)}>
               + Yeni Grup
             </Button>
-            <Button variant="outline" colorPalette="blue" onClick={() => setActivePanel("join")}>
+            <Button variant="outline" colorPalette="blue" onClick={() => setShowJoin(true)}>
               Davet Koduyla Katıl
             </Button>
           </>
@@ -497,34 +449,22 @@ export default function Groups() {
         </Alert.Root>
       )}
 
-      {activePanel === "create" && (
-        <Box mb={6}>
-          <CreateGroupPanel onCreated={() => setActivePanel(null)} onCancel={() => setActivePanel(null)} />
-        </Box>
-      )}
-
-      {activePanel === "join" && (
-        <Box mb={6}>
-          <JoinGroupPanel onJoined={() => setActivePanel(null)} onCancel={() => setActivePanel(null)} />
-        </Box>
-      )}
-
       {isLoading && (
         <Flex justify="center" py={12}>
           <Text color="gray.400" fontSize="sm">Yükleniyor...</Text>
         </Flex>
       )}
 
-      {!isLoading && list.length === 0 && !activePanel && (
+      {!isLoading && list.length === 0 && (
         <EmptyState
           icon={"\u{1F4C2}"}
           title="Henüz bir grubun yok"
           description="Yeni bir grup oluştur veya davet koduyla mevcut bir gruba katıl."
         >
-          <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setActivePanel("create")}>
+          <Button bg="teal.500" color="white" _hover={{ bg: "teal.600" }} onClick={() => setShowCreate(true)}>
             Grup Oluştur
           </Button>
-          <Button variant="outline" colorPalette="blue" onClick={() => setActivePanel("join")}>
+          <Button variant="outline" colorPalette="blue" onClick={() => setShowJoin(true)}>
             Davet Koduyla Katıl
           </Button>
         </EmptyState>
@@ -540,6 +480,9 @@ export default function Groups() {
           ))}
         </Grid>
       )}
+
+      <CreateGroupDialog open={showCreate} onClose={() => setShowCreate(false)} />
+      <JoinGroupDialog open={showJoin} onClose={() => setShowJoin(false)} />
     </Box>
   );
 }

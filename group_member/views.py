@@ -5,11 +5,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from group_member.models import GroupMember
-from group_member.permissions import IsGroupOwner
+from group_member.permissions import IsGroupOwner, IsGroupOwnerOrTermLessonInstructor
 
 
 class GroupMemberAcceptView(APIView):
-    permission_classes = [IsAuthenticated, IsGroupOwner]
+    permission_classes = [IsAuthenticated, IsGroupOwnerOrTermLessonInstructor]
 
     def patch(self, request, id):
         membership = get_object_or_404(GroupMember, id=id)
@@ -31,7 +31,7 @@ class GroupMemberAcceptView(APIView):
 
 
 class GroupMemberRejectView(APIView):
-    permission_classes = [IsAuthenticated, IsGroupOwner]
+    permission_classes = [IsAuthenticated, IsGroupOwnerOrTermLessonInstructor]
 
     def patch(self, request, id):
         membership = get_object_or_404(GroupMember, id=id)

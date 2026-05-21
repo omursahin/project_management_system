@@ -49,28 +49,29 @@ class TermLessonStudentViewSet(viewsets.ModelViewSet):
         - student: Filter by student ID
         - instructor: Filter by instructor ID (shows all registrations for instructor's lessons)
         """
-        queryset = super().get_queryset()
-        
-        # Get the current user
+        queryset = super().get_queryset().select_related('student', 'term_lesson__lesson', 'term_lesson__term')
+
         user = self.request.user
-        
-        # If user is an instructor, show registrations for their term lessons
-        # This can be done by filtering term_lessons where this user is the instructor
-        if hasattr(user, 'term_lessons'):
-            # User is an instructor, get their term lessons
-            instructor_lesson_ids = user.term_lessons.values_list('id', flat=True)
-            queryset = queryset.filter(term_lesson_id__in=instructor_lesson_ids)
-        
-        # Filter by term_lesson query parameter
+
+        # Rol bazli erisim:
+        # - Admin (superuser): tum kayitlar
+        # - Egitmen (is_staff): sadece kendi term_lesson'larindaki kayitlar
+        # - Ogrenci: sadece kendi kayitlari
+        if not user.is_superuser:
+            if user.is_staff:
+                queryset = queryset.filter(term_lesson__instructor=user)
+            else:
+                queryset = queryset.filter(student=user)
+
+        # Query parametre filtreleri
         term_lesson_id = self.request.query_params.get('term_lesson')
         if term_lesson_id:
             queryset = queryset.filter(term_lesson_id=term_lesson_id)
-        
-        # Filter by student query parameter
+
         student_id = self.request.query_params.get('student')
         if student_id:
             queryset = queryset.filter(student_id=student_id)
-        
+
         return queryset
 
     def get_permissions(self):

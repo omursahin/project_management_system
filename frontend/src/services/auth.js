@@ -46,14 +46,21 @@ export function getUserRole() {
   const user = getStoredUser();
   if (!user) return "user";
   if (user.is_superuser) return "admin";
-  if (user.is_staff) return "coordinator";
-  return "user";
+  if (user.is_staff) return "instructor";
+  return "student";
 }
 
 export function isAdmin() {
   return getUserRole() === "admin";
 }
 
-export function isCoordinator() {
-  return getUserRole() === "coordinator";
+export function isInstructor() {
+  return getUserRole() === "instructor";
 }
+
+export function isStudent() {
+  return getUserRole() === "student";
+}
+
+// Geriye donuk uyumluluk: eski isCoordinator() cagrilari hala calissin
+export const isCoordinator = isInstructor;

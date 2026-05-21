@@ -104,7 +104,7 @@ describe("Groups", () => {
     });
   });
 
-  it("Yeni Grup butonuna tıklayınca form açılır", async () => {
+  it("Yeni Grup butonuna tıklayınca dialog açılır", async () => {
     api.get.mockImplementation((url) => {
       if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
       if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
@@ -113,10 +113,12 @@ describe("Groups", () => {
     render(<Groups />);
     await waitFor(() => screen.getByText("Alpha Takımı"));
     fireEvent.click(screen.getByRole("button", { name: /Yeni Grup/i }));
-    expect(screen.getByRole("heading", { name: /Yeni Grup Oluştur/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Maksimum Üye Sayısı/i)).toBeInTheDocument();
+    });
   });
 
-  it("Davet Koduyla Katıl butonuna tıklayınca form açılır", async () => {
+  it("Davet Koduyla Katıl butonuna tıklayınca dialog açılır", async () => {
     api.get.mockImplementation((url) => {
       if (url === "/api/group/") return Promise.resolve({ data: mockGroups });
       if (url === "/api/term-lesson/") return Promise.resolve({ data: [] });
@@ -125,7 +127,9 @@ describe("Groups", () => {
     render(<Groups />);
     await waitFor(() => screen.getByText("Alpha Takımı"));
     fireEvent.click(screen.getByRole("button", { name: /Davet Koduyla Katıl/i }));
-    expect(screen.getByRole("heading", { name: /Gruba Katıl/i })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/Grup liderinden aldığın/i)).toBeInTheDocument();
+    });
   });
 
   it("Kopyala butonunu gösterir", async () => {

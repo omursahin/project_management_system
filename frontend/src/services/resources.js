@@ -84,3 +84,11 @@ export const groupMembers = createResource("groupMembers", "/api/group-member/")
 
 // Grup projeleri
 export const groupProjects = createResource("groupProjects", "/api/group-project/");
+
+// Kullanicilar - sadece admin (UserListView IsAdminUser). search param destekler.
+export const users = createResource("users", "/api/account/users/", {
+  toClient: (s) => ({
+    ...s,
+    full_name: [s.first_name, s.last_name].filter(Boolean).join(" ") || s.email,
+  }),
+});
