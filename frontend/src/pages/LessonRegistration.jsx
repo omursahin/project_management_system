@@ -1,65 +1,55 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box, Heading, Button, Badge, Spinner, Text
-} from '@chakra-ui/react';
+import React from 'react';
+import { Box, Heading, Button, Badge, Spinner, Text } from '@chakra-ui/react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '../services/api';
 
 const LessonRegistration = () => {
-  const [availableLessons, setAvailableLessons] = useState([]);
-  const [registeredLessons, setRegisteredLessons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [registeringId, setRegisteringId] = useState(null);
+  // Kayıt işlemi sonrası tabloları güncellemek için queryClient'ı çağırıyoruz
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      setLoading(true);
-      try {
-        const [availableRes, registeredRes] = await Promise.all([
-          api.get('/lesson/'),
-          api.get('/term-lesson-student/')
-        ]);
+  // 1. Mevcut Dersleri Çekme (GET)
+  const { data: availableLessons = [], isLoading: isAvailableLoading } = useQuery({
+    queryKey: ['availableLessons'],
+    queryFn: async () => {
+      const res = await api.get('/lesson/');
+      const data = res.data?.results || res.data;
+      return Array.isArray(data) ? data : [];
+    }
+  });
 
-        // Backend'in ne gönderdiğini konsolda görelim (F12 -> Console kısmından bakabilirsin)
-        console.log("Django'dan Gelen Mevcut Dersler:", availableRes.data);
-        console.log("Django'dan Gelen Kayıtlı Dersler:", registeredRes.data);
+  // 2. Kayıtlı Dersleri Çekme (GET)
+  const { data: registeredLessons = [], isLoading: isRegisteredLoading } = useQuery({
+    queryKey: ['registeredLessons'],
+    queryFn: async () => {
+      const res = await api.get('/term-lesson-student/');
+      const data = res.data?.results || res.data;
+      return Array.isArray(data) ? data : [];
+    }
+  });
 
-        // ÇÖKME KORUMASI: Gelen veri gerçekten bir dizi (Array) mi diye kontrol et
-        const availableData = availableRes.data?.results || availableRes.data;
-        setAvailableLessons(Array.isArray(availableData) ? availableData : []);
-
-        const registeredData = registeredRes.data?.results || registeredRes.data;
-        setRegisteredLessons(Array.isArray(registeredData) ? registeredData : []);
-
-      } catch (error) {
-        console.error("Veriler çekilirken hata oluştu:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllData();
-  }, []);
-
-  const handleRegister = async (lesson) => {
-    setRegisteringId(lesson.id);
-    try {
+  // 3. Derse Kayıt Olma İşlemi (POST)
+  const registerMutation = useMutation({
+    mutationFn: async (lesson) => {
       const payload = { term_lesson: lesson.id };
       const response = await api.post('/term-lesson-student/', payload);
-
-      setAvailableLessons(prev => prev.filter(l => l.id !== lesson.id));
-      setRegisteredLessons(prev => [...prev, response.data]);
-
+      return response.data;
+    },
+    onSuccess: (data, lesson) => {
       alert(`${lesson.title} dersine başarıyla kayıt oldunuz!`);
-
-    } catch (error) {
+      // İşlem başarılı olursa API'ye tekrar istek attırıp tabloları otomatik güncelliyoruz
+      queryClient.invalidateQueries({ queryKey: ['availableLessons'] });
+      queryClient.invalidateQueries({ queryKey: ['registeredLessons'] });
+    },
+    onError: (error) => {
       console.error("Kayıt işlemi başarısız:", error);
       alert("Derse kayıt olurken bir hata oluştu. Lütfen tekrar deneyin.");
-    } finally {
-      setRegisteringId(null);
     }
-  };
+  });
 
-  if (loading) {
+  // İki tablodan biri bile yükleniyorsa ekranda spinner göster
+  const isLoading = isAvailableLoading || isRegisteredLoading;
+
+  if (isLoading) {
     return (
       <Box p={8} textAlign="center">
         <Spinner size="xl" color="blue.500" />
@@ -102,8 +92,9 @@ const LessonRegistration = () => {
                       <Button
                         colorScheme="blue"
                         size="sm"
-                        onClick={() => handleRegister(lesson)}
-                        isLoading={registeringId === lesson.id}
+                        onClick={() => registerMutation.mutate(lesson)}
+                        // Sadece tıklanılan butonun dönmesini sağlar
+                        isLoading={(registerMutation.isPending || registerMutation.isLoading) && registerMutation.variables?.id === lesson.id}
                         loadingText="Kaydediliyor"
                       >
                         Kayıt Ol
