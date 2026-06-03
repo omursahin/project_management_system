@@ -27,6 +27,8 @@ import NotGirisi from "./pages/coordinator/NotGirisi.jsx";
 import GroupProjectPage from "./components/group-project/GroupProjectPage.jsx";
 import StudentLessonsPage from "./pages/student/StudentLessonsPage.jsx";
 import StudentLessonDetailPage from "./pages/student/StudentLessonDetailPage.jsx";
+import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function App() {
   return (
@@ -51,8 +53,9 @@ function App() {
           <Route path="lessons" element={<LessonsPage />} />
           <Route path="term-lessons" element={<TermLessonsPage />} />
           <Route path="student-assignments" element={<StudentAssignmentsPage />} />
-          <Route path="settings" element={<AdminPanel />} />
+          <Route path="settings" element={<Settings />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="profile" element={<Profile />} />
         </Route>
 
         <Route
@@ -70,6 +73,8 @@ function App() {
           <Route path="grades" element={<NotGirisi />} />
           <Route path="group-projects" element={<GroupProjectPage />} />
           <Route path="reports" element={<CoordinatorPanel />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
 
         <Route
@@ -86,6 +91,8 @@ function App() {
           <Route path="lessons/:id" element={<StudentLessonDetailPage />} />
           <Route path="groups" element={<Groups />} />
           <Route path="group-projects" element={<GroupProjectPage />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </Router>

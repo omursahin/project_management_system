@@ -11,15 +11,12 @@ class IsTermLessonInstructor(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Check if the user is authenticated
         if not request.user.is_authenticated:
             return False
-
-        # Get the TermLesson associated with this TermLessonStudent
-        term_lesson = obj.term_lesson
-        
-        # Check if the user is the instructor of this term lesson
-        return term_lesson.instructor == request.user  # noqa
+        # Superuser/admin her zaman izinli
+        if request.user.is_superuser:
+            return True
+        return obj.term_lesson.instructor == request.user  # noqa
 
 
 class IsTermLessonStudentOrInstructor(permissions.BasePermission):
@@ -30,14 +27,8 @@ class IsTermLessonStudentOrInstructor(permissions.BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        # Check if the user is authenticated
         if not request.user.is_authenticated:
             return False
-
-        # Check if the user is the student
-        is_student = obj.student == request.user
-        
-        # Check if the user is the instructor of the term lesson
-        is_instructor = obj.term_lesson.instructor == request.user
-        
-        return is_student or is_instructor  # noqa
+        if request.user.is_superuser:
+            return True
+        return obj.student == request.user or obj.term_lesson.instructor == request.user  # noqa

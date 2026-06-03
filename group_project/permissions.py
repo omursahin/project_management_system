@@ -7,17 +7,15 @@ class IsGroupOwnerOrInstructor(permissions.BasePermission):
     """
     
     def has_object_permission(self, request, view, obj):
-        # Check if user is the group owner
+        if request.user.is_superuser:
+            return True
         if request.user == obj.group.owner:
             return True
-        
-        # Check if user is the instructor of the term lesson from the group
         try:
             if request.user == obj.group.term_lesson.instructor:
                 return True
         except Exception:
             pass
-        
         return False
 
 
@@ -42,12 +40,12 @@ class IsInstructor(permissions.BasePermission):
     """
     
     def has_object_permission(self, request, view, obj):
-        # Check if user is the instructor of the term lesson
+        if request.user.is_superuser:
+            return True
         if hasattr(obj, 'group') and hasattr(obj.group, 'term_lesson'):
             try:
                 if request.user == obj.group.term_lesson.instructor:
                     return True
             except Exception:
                 pass
-        
         return False

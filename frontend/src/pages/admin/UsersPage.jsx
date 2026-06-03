@@ -291,6 +291,20 @@ export default function UsersPage() {
             />
           </HStack>
           <FormField
+            label="Telefon"
+            value={formData.phone_number}
+            onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+            placeholder="Opsiyonel"
+          />
+          <FormField
+            label="Adres"
+            value={formData.address}
+            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+            placeholder="Opsiyonel"
+            multiline
+            rows={2}
+          />
+          <FormField
             label={formData.id ? "Yeni Şifre (boş bırak = değişmez)" : "Şifre (boş bırakılırsa numara şifre olur)"}
             type="password"
             value={formData.password}
@@ -357,10 +371,12 @@ export default function UsersPage() {
               Beklenen format
             </Text>
             <Text fontSize="xs" color="blue.700">
-              İlk satır başlık olmalı: <strong>numara</strong>, <strong>ad</strong>, <strong>soyad</strong>{" "}
-              (alternatif başlıklar: id_number/identification_number/ogrenci_no • first_name/isim • last_name/soyisim).
+              İlk satır başlık olmalı: <strong>numara</strong>, <strong>ad</strong>, <strong>soyad</strong>,{" "}
+              <strong>email</strong> (opsiyonel){" "}
               <br />
-              Email <code>numara@student.local</code> olarak, şifre numaraya eşit olarak üretilir.
+              Alternatif başlıklar: id_number/ogrenci_no • first_name/isim • last_name/soyisim • email/e-posta/mail.
+              <br />
+              Email kolonu boş veya yoksa <code>numara@student.local</code> üretilir. Şifre = numara.
             </Text>
           </Box>
 

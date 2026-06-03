@@ -94,19 +94,18 @@ class LogoutSerializer(serializers.Serializer):
             raise serializers.ValidationError("Token geçersiz veya zaten logout yapılmış.")
 
 class ProfileSerializer(serializers.ModelSerializer):
-            class Meta:
-                model = MyUser
-                fields = [
-                    'id',
-                    'email',
-                    'first_name',
-                    'last_name',
-                    'identification_number',
-                    'phone_number',
-                    'address',
-                    'department'
-                ]
-                read_only_fields = ['id', 'email', 'identification_number', 'department']
+    phone_number = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    address = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    is_staff = serializers.BooleanField(read_only=True)
+    is_superuser = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'identification_number',
+            'phone_number', 'address', 'department', 'is_staff', 'is_superuser',
+        ]
+        read_only_fields = ['id', 'email', 'identification_number', 'department', 'is_staff', 'is_superuser']
 
 
 # --- YENİ EKLENEN KISIM: Issue #9 ---
@@ -183,9 +182,11 @@ class AdminUserCreateSerializer(serializers.ModelSerializer):
 
 
 class AdminUserUpdateSerializer(serializers.ModelSerializer):
-    """Admin tarafindan kullanici guncelleme."""
+    """Admin tarafindan kullanici guncelleme. phone_number ve address bos olabilir."""
 
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    address = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
     class Meta:
         model = MyUser
