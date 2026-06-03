@@ -63,3 +63,24 @@ class TermLessonStudentCreateSerializer(serializers.ModelSerializer):
             'final': {'required': False, 'allow_null': True},
             'make_up': {'required': False, 'allow_null': True},
         }
+
+
+class BulkApproveSerializer(serializers.Serializer):
+    """
+    Serializer for bulk approving/rejecting student registrations.
+    Accepts a list of student IDs and an approval status.
+    """
+    student_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="List of TermLessonStudent IDs to approve/reject"
+    )
+    is_approved = serializers.BooleanField(
+        help_text="Approval status: true to approve, false to reject"
+    )
+
+    def validate_student_ids(self, value):
+        """Validate that at least one student ID is provided."""
+        if not value:
+            raise serializers.ValidationError("student_ids cannot be empty.")
+        return value
+
