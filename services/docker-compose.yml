@@ -1,0 +1,67 @@
+# =============================================================================
+# services/docker-compose.yml
+#
+# Bu compose dosyasi SADECE iki bagimsiz mikroservisi ayaga kaldirir:
+#   - embedding_service  (port 8100): metni chunk'lara bolup bge-m3 vektoru uretir
+#   - similarity_service (port 8200): chunk vektorlerini karsilastirip skor verir
+#
+# ANA PROJEYE (web/db) DOKUNMAZ. Ana proje icin kok dizindeki docker-compose.yml
+# kullanilir. Bu dosya tamamen bagimsizdir ve varsayilan olarak HIC DB kullanmaz
+# (STORAGE_BACKEND=null).
+#
+# -----------------------------------------------------------------------------
+# DB'yi aktiflestirmek icin: STORAGE_BACKEND=postgres + DATABASE_DSN verin ve
+# ana projenin postgres agina baglayin. Asagida "external network" ornegi
+# yorumlu olarak verilmistir. Ana projenin agi genelde
+# "project_management_system_default" adiyla olusur (kok compose calistiginda).
+# Kontrol: `docker network ls`
+# =============================================================================
+
+version: "3.8"
+
+services:
+  embedding_service:
+    build: ./embedding_service
+    container_name: embedding_service
+    ports:
+      - "8100:8100"
+    environment:
+      # Varsayilan: DB pasif. Servis tamamen bagimsiz calisir.
+      STORAGE_BACKEND: "null"
+      # DB'yi acmak icin asagiyi doldurun (ve env_file kullanabilirsiniz):
+      # STORAGE_BACKEND: "postgres"
+      # DATABASE_DSN: "postgresql://user:pass@db:5432/dbname"
+    # env_file:
+    #   - ./.env   # Opsiyonel: services/.env.example dosyasini kopyalayip kullanin.
+    volumes:
+      # HuggingFace model cache: bge-m3 her seferinde tekrar inmesin diye kalici.
+      - ./.model-cache:/models
+    restart: unless-stopped
+
+  similarity_service:
+    build: ./similarity_service
+    container_name: similarity_service
+    ports:
+      - "8200:8200"
+    environment:
+      # Varsayilan: DB pasif. Skor hesabi tamamen istek govdesinden yapilir.
+      STORAGE_BACKEND: "null"
+      # DB'yi acmak icin:
+      # STORAGE_BACKEND: "postgres"
+      # DATABASE_DSN: "postgresql://user:pass@db:5432/dbname"
+    # env_file:
+    #   - ./.env   # Opsiyonel.
+    restart: unless-stopped
+
+# -----------------------------------------------------------------------------
+# DB ENTEGRASYONU ICIN AG ORNEGI (yorumlu):
+#
+# 1) Ana projeyi ayaga kaldirin (kok dizinde):  docker compose up -d
+# 2) Olusan agin adini ogrenin:                 docker network ls
+# 3) Asagidaki bloklari acin ve her iki servise de `networks: [pms_net]` ekleyin.
+#
+# networks:
+#   pms_net:
+#     external: true
+#     name: project_management_system_default
+# -----------------------------------------------------------------------------
