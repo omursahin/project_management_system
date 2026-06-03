@@ -1,0 +1,21 @@
+# Web stack (makul pinli)
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+python-multipart==0.0.20
+
+# Sayisal
+numpy>=1.26
+
+# ML / embedding (gevsek pin: ortama gore cozulur)
+FlagEmbedding>=1.2.10
+torch>=2.2
+transformers>=4.40
+
+# Dosya cozumleme
+pymupdf>=1.24
+python-docx>=1.1
+
+# Postgres (sadece STORAGE_BACKEND=postgres ile kullanilir)
+psycopg[binary]>=3.1
