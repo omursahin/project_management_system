@@ -1,0 +1,28 @@
+# Python derleme ciktilari
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Sanal ortamlar
+.venv/
+venv/
+env/
+
+# Ortam dosyalari ve sirlar
+.env
+*.env
+!.env.example
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Belgeler ve git
+README.md
+.git/
+.gitignore
