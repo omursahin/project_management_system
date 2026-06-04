@@ -218,6 +218,7 @@ class UserViewSet(viewsets.ModelViewSet):
             "numara": {"numara", "id_number", "identification_number", "ogrenci_no", "ogrenci no", "student_no", "kimlik"},
             "ad": {"ad", "first_name", "isim", "name"},
             "soyad": {"soyad", "last_name", "soyisim", "surname"},
+            "email": {"email", "e-mail", "e_mail", "eposta", "e-posta", "e posta", "mail"},
         }
 
         col_index = {}
@@ -227,10 +228,12 @@ class UserViewSet(viewsets.ModelViewSet):
                     col_index[std_key] = idx
                     break
 
-        # Header bulunamadiysa pozisyonel (numara=0, ad=1, soyad=2) varsay
+        # Zorunlu kolonlar bulunamadiysa pozisyonel (numara=0, ad=1, soyad=2, email=3 opsiyonel) varsay
         if "numara" not in col_index or "ad" not in col_index or "soyad" not in col_index:
             col_index = {"numara": 0, "ad": 1, "soyad": 2}
-            data_rows = rows  # tum satirlar veri kabul edilir
+            if len(headers) >= 4:
+                col_index["email"] = 3
+            data_rows = rows
         else:
             data_rows = rows[1:]
 
@@ -260,7 +263,15 @@ class UserViewSet(viewsets.ModelViewSet):
                     skipped.append({"row": row_idx, "numara": numara, "reason": "Zaten mevcut"})
                     continue
 
-                email = f"{numara}@student.local"
+                # Email kolonu varsa onu kullan; yoksa numaradan uret
+                email = ""
+                if "email" in col_index and col_index["email"] < len(row):
+                    raw_email = row[col_index["email"]]
+                    if raw_email is not None:
+                        email = str(raw_email).strip()
+                if not email:
+                    email = f"{numara}@student.local"
+
                 if MyUser.objects.filter(email=email).exists():
                     skipped.append({"row": row_idx, "numara": numara, "reason": f"Email cakisti: {email}"})
                     continue

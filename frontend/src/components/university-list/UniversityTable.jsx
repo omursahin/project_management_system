@@ -169,11 +169,23 @@ const UniversityTable = () => {
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           />
-          <FormField
-            label="Şehir"
-            value={formData.city}
-            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-          />
+          <HStack gap={3}>
+            <FormField
+              label="Şehir"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+            />
+            <FormField
+              label="Tür"
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              options={[
+                { value: "Devlet", label: "Devlet" },
+                { value: "Vakıf", label: "Vakıf" },
+              ]}
+              placeholder={false}
+            />
+          </HStack>
           <FormField
             label="Hakkında"
             multiline

@@ -20,6 +20,17 @@ export default function FacultiesPage() {
         { key: "short_title", header: "KISA AD" },
         { key: "faculty_code", header: "KOD" },
         { key: "university", header: "ÜNİVERSİTE", render: (r) => universityName(r.university) },
+        {
+          key: "description",
+          header: "AÇIKLAMA",
+          render: (r) => (
+            <span title={r.description || ""}>
+              {r.description
+                ? (r.description.length > 60 ? `${r.description.slice(0, 60)}…` : r.description)
+                : <span style={{ color: "#A0AEC0" }}>—</span>}
+            </span>
+          ),
+        },
       ]}
       fields={[
         { key: "university", label: "Üniversite", options: universityOptions, placeholder: "Üniversite seçiniz..." },

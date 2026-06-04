@@ -1,0 +1,28 @@
+Üniversiteler:
+üniversite yanlızca devlet olabiliyor
+
+Fakülteler:
+Fakülte açıklamasına erişilemiyor
+
+
+Dönem-Ders Atama:
+Dersin öğrencisi atandıktan sonra onaylanmıyor, hata:{"detail":"You do not have permission to perform this action."}
+burada hata adminin eğitmen olmadığı durumda bir ders açtığında başkasının eğitmen olduğu derse öğrenci kabul edememesi. Bunun için bir uyarı fırlatmalı
+
+Kullanıcılar:
+kullanıcı düzenlemede hata:
+{
+    "phone_number": [
+        "This field may not be blank."
+    ],
+    "address": [
+        "This field may not be blank."
+    ]
+}
+Bu alanların eklenmesi gerekiyor
+
+Excel ile otomatik öğrenci ekleme:
+mail adresleri doğru şekilde aktarılamıyor
+
+Ana sayfa üstteki fotodaki gibi gözükürken hesapta profilim ya da ayarlar sekmesine git gel yaptıktan sonra kötü görünmeye başlıyor.
+
