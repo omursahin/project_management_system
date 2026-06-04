@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.password_validation import validate_password
 
 
 class CustomUserManager(BaseUserManager):
@@ -32,6 +33,11 @@ class CustomUserManager(BaseUserManager):
             identification_number=identification_number,
             **extra_fields,
         )
+        if password is None:
+            user.set_unusable_password()
+            user.save(using=self._db)
+            return user
+        validate_password(password, user=user)
         user.set_password(password)
         user.save(using=self._db)
         return user

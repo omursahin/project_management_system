@@ -67,13 +67,14 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data.pop("password2")
-        password = validated_data.pop("password")
-
-        user = MyUser(**validated_data)
-        user.set_password(password)
-        user.save()
-
-        return user
+        return MyUser.objects.create_user(
+            email=validated_data.pop("email"),
+            first_name=validated_data.pop("first_name"),
+            last_name=validated_data.pop("last_name"),
+            identification_number=validated_data.pop("identification_number"),
+            password=validated_data.pop("password"),
+            **validated_data,
+        )
 
 
 from rest_framework_simplejwt.tokens import RefreshToken
