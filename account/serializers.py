@@ -92,3 +92,135 @@ class LogoutSerializer(serializers.Serializer):
             token.blacklist()
         except Exception:
             raise serializers.ValidationError("Token geçersiz veya zaten logout yapılmış.")
+
+class ProfileSerializer(serializers.ModelSerializer):
+    phone_number = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    address = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    is_staff = serializers.BooleanField(read_only=True)
+    is_superuser = serializers.BooleanField(read_only=True)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            'id', 'email', 'first_name', 'last_name', 'identification_number',
+            'phone_number', 'address', 'department', 'is_staff', 'is_superuser',
+        ]
+        read_only_fields = ['id', 'email', 'identification_number', 'department', 'is_staff', 'is_superuser']
+
+
+# --- YENİ EKLENEN KISIM: Issue #9 ---
+class UserListSerializer(serializers.ModelSerializer):
+    department_name = serializers.CharField(source='department.name', read_only=True)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "identification_number",
+            "phone_number",
+            "address",
+            "department",
+            "department_name",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "date_joined",
+        ]
+
+
+class AdminUserCreateSerializer(serializers.ModelSerializer):
+    """Admin tarafindan kullanici olusturma. Sifre opsiyoneldir; verilmezse kimlik numarasi sifre olur."""
+
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "identification_number",
+            "phone_number",
+            "address",
+            "department",
+            "is_staff",
+            "is_superuser",
+            "password",
+        ]
+        extra_kwargs = {
+            "email": {"required": False, "allow_blank": True},
+            "phone_number": {"required": False, "allow_blank": True, "default": ""},
+            "address": {"required": False, "allow_blank": True, "default": ""},
+            "department": {"required": False, "allow_null": True},
+            "is_staff": {"required": False, "default": False},
+            "is_superuser": {"required": False, "default": False},
+        }
+
+    def validate_identification_number(self, value):
+        value = (value or "").strip()
+        if len(value) != 11 or not value.isdigit():
+            raise serializers.ValidationError("Kimlik/öğrenci numarası 11 haneli sayı olmalı.")
+        if MyUser.objects.filter(identification_number=value).exists():
+            raise serializers.ValidationError("Bu numara zaten kullanılıyor.")
+        return value
+
+    def create(self, validated_data):
+        # Email yoksa kimlik numarasindan uret
+        if not validated_data.get("email"):
+            validated_data["email"] = f"{validated_data['identification_number']}@student.local"
+        # Email cakismasi kontrolu
+        if MyUser.objects.filter(email=validated_data["email"]).exists():
+            raise serializers.ValidationError({"email": "Bu email zaten kullanılıyor."})
+        password = validated_data.pop("password", "") or validated_data["identification_number"]
+        user = MyUser(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    """Admin tarafindan kullanici guncelleme. phone_number ve address bos olabilir."""
+
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    phone_number = serializers.CharField(required=False, allow_blank=True, max_length=20)
+    address = serializers.CharField(required=False, allow_blank=True, max_length=255)
+
+    class Meta:
+        model = MyUser
+        fields = [
+            "email",
+            "first_name",
+            "last_name",
+            "identification_number",
+            "phone_number",
+            "address",
+            "department",
+            "is_active",
+            "is_staff",
+            "is_superuser",
+            "password",
+        ]
+
+    def validate_identification_number(self, value):
+        value = (value or "").strip()
+        if len(value) != 11 or not value.isdigit():
+            raise serializers.ValidationError("Kimlik/öğrenci numarası 11 haneli sayı olmalı.")
+        qs = MyUser.objects.filter(identification_number=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Bu numara baska bir kullaniciya ait.")
+        return value
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop("password", None)
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
+

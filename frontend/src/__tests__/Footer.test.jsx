@@ -15,9 +15,9 @@ describe("Footer", () => {
     expect(screen.getByText(new RegExp(currentYear))).toBeInTheDocument();
   });
 
-  it("Tüm Hakları Saklıdır ifadesini içerir", () => {
+  it("Proje Yönetim Sistemi ifadesini içerir", () => {
     render(<Footer />);
-    expect(screen.getByText(/Tüm Hakları Saklıdır/i)).toBeInTheDocument();
+    expect(screen.getByText(/Proje Yönetim Sistemi/i)).toBeInTheDocument();
   });
 
   it("footer elementi olarak render eder", () => {

@@ -1,14 +1,34 @@
-import { Flex, Box } from "@chakra-ui/react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar.jsx";
-import Sidebar from "./components/Sidebar.jsx";
-import Footer from "./components/Footer.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
-
-// University list bileşenini import et
-import UniversityTable from "./components/university-list/UniversityTable.jsx";
+import Home from "./pages/Home.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import Groups from "./pages/Groups.jsx";
+import { isAdmin, isInstructor } from "./services/auth.js";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import UserLayout from "./components/layout/UserLayout.jsx";
+import AdminLayout from "./components/layout/AdminLayout.jsx";
+import CoordinatorLayout from "./components/layout/CoordinatorLayout.jsx";
+
+import AdminPanel from "./pages/admin/AdminPanel.jsx";
+import AdminUniversitiesPage from "./pages/admin/UniversitiesPage.jsx";
+import FacultiesPage from "./pages/admin/FacultiesPage.jsx";
+import DepartmentsPage from "./pages/admin/DepartmentsPage.jsx";
+import TermsPage from "./pages/admin/TermsPage.jsx";
+import LessonsPage from "./pages/admin/LessonsPage.jsx";
+import TermLessonsPage from "./pages/admin/TermLessonsPage.jsx";
+import StudentAssignmentsPage from "./pages/admin/StudentAssignmentsPage.jsx";
+import UsersPage from "./pages/admin/UsersPage.jsx";
+import CoordinatorPanel from "./pages/coordinator/CoordinatorPanel.jsx";
+import InstructorHome from "./pages/instructor/InstructorHome.jsx";
+import MyTermLessonsPage from "./pages/instructor/MyTermLessonsPage.jsx";
+import InstructorLessonDetailPage from "./pages/instructor/InstructorLessonDetailPage.jsx";
+import NotGirisi from "./pages/coordinator/NotGirisi.jsx";
+import GroupProjectPage from "./components/group-project/GroupProjectPage.jsx";
+import StudentLessonsPage from "./pages/student/StudentLessonsPage.jsx";
+import StudentLessonDetailPage from "./pages/student/StudentLessonDetailPage.jsx";
+import Profile from "./pages/Profile.jsx";
+import Settings from "./pages/Settings.jsx";
 
 function App() {
   return (
@@ -18,47 +38,64 @@ function App() {
         <Route path="/register" element={<Register />} />
 
         <Route
+          path="admin"
+          element={
+            <ProtectedRoute role={isAdmin}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminPanel />} />
+          <Route path="universities" element={<AdminUniversitiesPage />} />
+          <Route path="faculties" element={<FacultiesPage />} />
+          <Route path="departments" element={<DepartmentsPage />} />
+          <Route path="terms" element={<TermsPage />} />
+          <Route path="lessons" element={<LessonsPage />} />
+          <Route path="term-lessons" element={<TermLessonsPage />} />
+          <Route path="student-assignments" element={<StudentAssignmentsPage />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
+
+        <Route
+          path="instructor"
+          element={
+            <ProtectedRoute role={isInstructor}>
+              <CoordinatorLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<InstructorHome />} />
+          <Route path="groups" element={<CoordinatorPanel />} />
+          <Route path="lessons" element={<MyTermLessonsPage />} />
+          <Route path="lessons/:id" element={<InstructorLessonDetailPage />} />
+          <Route path="grades" element={<NotGirisi />} />
+          <Route path="group-projects" element={<GroupProjectPage />} />
+          <Route path="reports" element={<CoordinatorPanel />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
+
+        <Route
           path="/*"
           element={
-            <Box minH="100vh" display="flex" flexDirection="column">
-              <Navbar />
-              <Flex flex="1">
-                <Sidebar />
-                <Box as="main" p={8} flex="1" bg="white">
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Box>
-                          <h1>Hoş Geldin! Projenin Çakraları açılıyor... 🚀</h1>
-                          <p>Burada projelerini yönetmeye başlayabilirsin.</p>
-                        </Box>
-                      }
-                    />
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <Box>
-                          <h1>Panel (Dashboard)</h1>
-                          <p>İstatistikler ve özet bilgiler burada yer alacak.</p>
-                        </Box>
-                      }
-                    />
-                    {/* Üniversite listesi rotasını ekle */}
-                    <Route path="/universities" element={<UniversityTable />} />
-
-                    <Route path="/groups" element={<Groups />} />
-
-                  </Routes>
-                </Box>
-              </Flex>
-              <Footer />
-            </Box>
+            <ProtectedRoute>
+              <UserLayout />
+            </ProtectedRoute>
           }
-        />
+        >
+          <Route index element={<Home />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="lessons" element={<StudentLessonsPage />} />
+          <Route path="lessons/:id" element={<StudentLessonDetailPage />} />
+          <Route path="groups" element={<Groups />} />
+          <Route path="group-projects" element={<GroupProjectPage />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Settings />} />
+        </Route>
       </Routes>
     </Router>
   );
 }
-
 export default App;

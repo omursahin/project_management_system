@@ -1,12 +1,17 @@
 import { describe, it, expect } from "vitest";
 import { screen } from "@testing-library/react";
 import { render } from "../test/test-utils";
-import Sidebar from "../components/Sidebar";
+import Sidebar from "../components/sidebar/UserSidebar.jsx";
 
 describe("Sidebar", () => {
-  it("MENÜ başlığını gösterir", () => {
+  it("GENEL bölüm başlığını gösterir", () => {
     render(<Sidebar />);
-    expect(screen.getByText("MENÜ")).toBeInTheDocument();
+    expect(screen.getByText("GENEL")).toBeInTheDocument();
+  });
+
+  it("HESAP bölüm başlığını gösterir", () => {
+    render(<Sidebar />);
+    expect(screen.getByText("HESAP")).toBeInTheDocument();
   });
 
   it("Ana Sayfa linkini gösterir", () => {
@@ -14,14 +19,9 @@ describe("Sidebar", () => {
     expect(screen.getByText("Ana Sayfa")).toBeInTheDocument();
   });
 
-  it("Panel linkini gösterir", () => {
+  it("Derslerim linkini gösterir", () => {
     render(<Sidebar />);
-    expect(screen.getByText("Panel")).toBeInTheDocument();
-  });
-
-  it("Gruplarım linkini gösterir", () => {
-    render(<Sidebar />);
-    expect(screen.getByText("Gruplarım")).toBeInTheDocument();
+    expect(screen.getByText("Derslerim")).toBeInTheDocument();
   });
 
   it("Profilim linkini gösterir", () => {
@@ -32,6 +32,11 @@ describe("Sidebar", () => {
   it("Ayarlar linkini gösterir", () => {
     render(<Sidebar />);
     expect(screen.getByText("Ayarlar")).toBeInTheDocument();
+  });
+
+  it("Gruplarim linkini kaldirildi - artik sidebarda gosterilmemeli", () => {
+    render(<Sidebar />);
+    expect(screen.queryByText("Gruplarım")).not.toBeInTheDocument();
   });
 
   it("aside elementi olarak render eder", () => {

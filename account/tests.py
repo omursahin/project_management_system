@@ -54,6 +54,20 @@ class AuthTests(BaseTestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_login_returns_role_flags(self):
+        login_via_account_url = reverse('login')
+        response = self.client.post(login_via_account_url, {
+            "email": self.email,
+            "password": self.password
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("user", response.data)
+        self.assertIn("is_staff", response.data["user"])
+        self.assertIn("is_superuser", response.data["user"])
+        self.assertFalse(response.data["user"]["is_staff"])
+        self.assertFalse(response.data["user"]["is_superuser"])
+
 
 class RegisterTests(BaseTestCase):
     def setUp(self):

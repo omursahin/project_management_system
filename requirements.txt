@@ -23,4 +23,6 @@ typing-extensions==4.15.0
 pytest
 pytest-django
 psycopg2-binary
-python-dotenv
+django-environ
+django-filter
+openpyxl
